@@ -9,12 +9,14 @@ import argparse
 import warnings
 import os
 
+from datasets import get_last_N
+
 warnings.filterwarnings('once')
 
 if not os.getcwd().endswith('data'):
     os.chdir('data')
 
-data_path = Path('Yearly-train.csv')
+data_path = Path('data/Yearly-train.csv')
 
 data = pd.read_csv(data_path)
 data = data.drop('V1', axis=1)
@@ -23,6 +25,7 @@ data = data.drop('V1', axis=1)
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-i', '--input_len', type=int, default=12, help='Insample length.')
+parser.add_argument('--no_window', action='store_true', help='Don\'t generate windows from the timeseries.')
 parser.add_argument('--line', action='store_true', help='Approximate outsample with a linear regression.')
 
 args = parser.parse_args()
@@ -39,7 +42,14 @@ if args.line:
         return lin_reg.predict(np.arange(len(y))[:, np.newaxis]).flatten()
 
 
-def split_series(ser):
+def split_series(ser, window):
+    """
+    Split series into multiple windows.
+
+    :param ser: A series with a length larger than the window
+    :param window: Size of the windows that the series will be split into
+    :return: An array with a shape of (num_windows, window)
+    """
     x = []
     y = []
     for i in range(ser.notna().sum() - window + 1):
@@ -51,17 +61,24 @@ def split_series(ser):
     return np.array(x), np.array(y)
 
 
+X, Y = [], []
+
 for s in tqdm(data.values):
     ser = pd.Series(s)
-    if ser.notna().sum() <= window - 1:
-        continue
-    x, y = split_series(ser)
-    try:
-        X = np.vstack([X, x])
-        Y = np.vstack([Y, y])
-    except NameError:
-        X = x.copy()
-        Y = y.copy()
+
+    if args.no_window:
+        ser = get_last_N(ser, window)
+        X.append(ser[:-6])
+        Y.append(ser[-6:])
+    else:
+        if ser.notna().sum() <= window - 1:
+            continue
+        x, y = split_series(ser, window)
+        X.append(x)
+        Y.append(y)
+
+X = np.vstack(X)
+Y = np.vstack(Y)
 
 X_train, X_test, y_train, y_test = train_test_split(X, Y)
 print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
@@ -85,6 +102,18 @@ if args.line:
     print('yearly_{}_scales_test_line.pkl'.format(window))
     print('yearly_{}_train_line.pkl'.format(window))
     print('yearly_{}_validation_line.pkl'.format(window))
+
+elif args.no_window:
+    pkl.dump(sc_train, open('yearly_{}_scales_train_nw.pkl'.format(window), 'wb'))
+    pkl.dump(sc_test, open('yearly_{}_scales_test_nw.pkl'.format(window), 'wb'))
+    pkl.dump((X_train, y_train), open('yearly_{}_train_nw.pkl'.format(window), 'wb'))
+    pkl.dump((X_test, y_test), open('yearly_{}_validation_nw.pkl'.format(window), 'wb'))
+
+    print('Saved files:')
+    print('yearly_{}_scales_train_nw.pkl'.format(window))
+    print('yearly_{}_scales_test_nw.pkl'.format(window))
+    print('yearly_{}_train_nw.pkl'.format(window))
+    print('yearly_{}_validation_nw.pkl'.format(window))
 
 else:
     pkl.dump(sc_train, open('yearly_{}_scales_train.pkl'.format(window), 'wb'))
