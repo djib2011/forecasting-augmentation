@@ -1,6 +1,13 @@
 import pickle as pkl
 import numpy as np
 import argparse
+import os
+import sys
+
+if os.getcwd().endswith('datasets'):
+    os.chdir('..')
+
+sys.path.append(os.getcwd())
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
@@ -15,11 +22,11 @@ args = parser.parse_args()
 window = args.input_len + 6
 
 # Load data
-
 if args.no_window:
     n = 'data/yearly_{}_train_nw.pkl'.format(window)
 else:
     n = 'data/yearly_{}_train.pkl'.format(window)
+
 with open(n, 'rb') as f:
     data = pkl.load(f)
 
@@ -33,5 +40,8 @@ if args.no_window:
 else:
     n = 'data/yearly_{}_train_aug_by_{}_num_{}.pkl'.format(window, args.combinations, args.num_samples)
 
+print('Saving data at:', n)
+
 with open(n, 'wb') as f:
     pkl.dump(syn, f)
+

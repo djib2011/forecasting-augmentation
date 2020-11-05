@@ -8,13 +8,16 @@ from sklearn.preprocessing import MinMaxScaler
 import argparse
 import warnings
 import os
+import sys
+
+warnings.filterwarnings('ignore')
+
+if os.getcwd().endswith('datasets'):
+    os.chdir('..')
+
+sys.path.append(os.getcwd())
 
 from datasets import get_last_N
-
-warnings.filterwarnings('once')
-
-if not os.getcwd().endswith('data'):
-    os.chdir('data')
 
 data_path = Path('data/Yearly-train.csv')
 
@@ -92,37 +95,38 @@ X_test = sc_train.fit_transform(X_test.T).T
 y_test = sc_train.transform(y_test.T).T
 
 if args.line:
-    pkl.dump(sc_train, open('yearly_{}_scales_train_line.pkl'.format(window), 'wb'))
-    pkl.dump(sc_test, open('yearly_{}_scales_test_line.pkl'.format(window), 'wb'))
-    pkl.dump((X_train, y_train), open('yearly_{}_train_line.pkl'.format(window), 'wb'))
-    pkl.dump((X_test, y_test), open('yearly_{}_validation_line.pkl'.format(window), 'wb'))
+    pkl.dump(sc_train, open('data/yearly_{}_scales_train_line.pkl'.format(window), 'wb'))
+    pkl.dump(sc_test, open('data/yearly_{}_scales_test_line.pkl'.format(window), 'wb'))
+    pkl.dump((X_train, y_train), open('data/yearly_{}_train_line.pkl'.format(window), 'wb'))
+    pkl.dump((X_test, y_test), open('data/yearly_{}_validation_line.pkl'.format(window), 'wb'))
 
     print('Saved files:')
-    print('yearly_{}_scales_train_line.pkl'.format(window))
-    print('yearly_{}_scales_test_line.pkl'.format(window))
-    print('yearly_{}_train_line.pkl'.format(window))
-    print('yearly_{}_validation_line.pkl'.format(window))
+    print('data/yearly_{}_scales_train_line.pkl'.format(window))
+    print('data/yearly_{}_scales_test_line.pkl'.format(window))
+    print('data/yearly_{}_train_line.pkl'.format(window))
+    print('data/yearly_{}_validation_line.pkl'.format(window))
 
 elif args.no_window:
-    pkl.dump(sc_train, open('yearly_{}_scales_train_nw.pkl'.format(window), 'wb'))
-    pkl.dump(sc_test, open('yearly_{}_scales_test_nw.pkl'.format(window), 'wb'))
-    pkl.dump((X_train, y_train), open('yearly_{}_train_nw.pkl'.format(window), 'wb'))
-    pkl.dump((X_test, y_test), open('yearly_{}_validation_nw.pkl'.format(window), 'wb'))
+    pkl.dump(sc_train, open('data/yearly_{}_scales_train_nw.pkl'.format(window), 'wb'))
+    pkl.dump(sc_test, open('data/yearly_{}_scales_test_nw.pkl'.format(window), 'wb'))
+    pkl.dump((X_train, y_train), open('data/yearly_{}_train_nw.pkl'.format(window), 'wb'))
+    pkl.dump((X_test, y_test), open('data/yearly_{}_validation_nw.pkl'.format(window), 'wb'))
 
     print('Saved files:')
-    print('yearly_{}_scales_train_nw.pkl'.format(window))
-    print('yearly_{}_scales_test_nw.pkl'.format(window))
-    print('yearly_{}_train_nw.pkl'.format(window))
-    print('yearly_{}_validation_nw.pkl'.format(window))
+    print('data/yearly_{}_scales_train_nw.pkl'.format(window))
+    print('data/yearly_{}_scales_test_nw.pkl'.format(window))
+    print('data/yearly_{}_train_nw.pkl'.format(window))
+    print('data/yearly_{}_validation_nw.pkl'.format(window))
 
 else:
-    pkl.dump(sc_train, open('yearly_{}_scales_train.pkl'.format(window), 'wb'))
-    pkl.dump(sc_test, open('yearly_{}_scales_test.pkl'.format(window), 'wb'))
-    pkl.dump((X_train, y_train), open('yearly_{}_train.pkl'.format(window), 'wb'))
-    pkl.dump((X_test, y_test), open('yearly_{}_validation.pkl'.format(window), 'wb'))
+    pkl.dump(sc_train, open('data/yearly_{}_scales_train.pkl'.format(window), 'wb'))
+    pkl.dump(sc_test, open('data/yearly_{}_scales_test.pkl'.format(window), 'wb'))
+    pkl.dump((X_train, y_train), open('data/yearly_{}_train.pkl'.format(window), 'wb'))
+    pkl.dump((X_test, y_test), open('data/yearly_{}_validation.pkl'.format(window), 'wb'))
 
     print('Saved files:')
-    print('yearly_{}_scales_train.pkl'.format(window))
-    print('yearly_{}_scales_test.pkl'.format(window))
-    print('yearly_{}_train.pkl'.format(window))
-    print('yearly_{}_validation.pkl'.format(window))
+    print('data/yearly_{}_scales_train.pkl'.format(window))
+    print('data/yearly_{}_scales_test.pkl'.format(window))
+    print('data/yearly_{}_train.pkl'.format(window))
+    print('data/yearly_{}_validation.pkl'.format(window))
+
