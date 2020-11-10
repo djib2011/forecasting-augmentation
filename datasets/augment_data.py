@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 import os
 import sys
+import h5py
 
 if os.getcwd().endswith('datasets'):
     os.chdir('..')
@@ -23,22 +24,33 @@ window = args.input_len + 6
 
 # Load data
 if args.no_window:
-    n = 'data/yearly_{}_X_nw.csv'.format(window)
+    n = 'data/yearly_{}_nw.h5'.format(window)
 else:
-    n = 'data/yearly_{}_X.csv'.format(window)
+    n = 'data/yearly_{}.h5'.format(window)
 
-with open(n, 'rb') as f:
-    data = np.loadtxt(n, delimiter=',')
+with h5py.File(n, 'r') as hf:
+    X = np.array(hf.get('X'))
+    y = np.array(hf.get('y'))
+
+data = np.c_[X, y]
+del X, y
 
 # Generate synthetic samples
-s = [np.random.choice(np.arange(len(data[0])), args.num_samples, replace=True) for _ in range(args.combinations)]
-syn = np.array([np.sum([d[i] for i in s], axis=0) / args.combinations for d in data])
+samples_list = [np.random.choice(np.arange(len(data[0])), args.num_samples, replace=True) for _ in range(args.combinations)]
+syn = np.array([np.sum([data[s[i]] for s in samples_list], axis=0) / args.combinations for i in range(args.num_samples)])
 
-# Store new
+X = syn[:, :-6]
+y = syn[:, -6:]
+del syn
+
+# Locations to store augmented
 if args.no_window:
-    n = 'data/yearly_{}_aug_by_{}_num_{}_nw.csv'.format(window, args.combinations, args.num_samples)
+    n = 'data/yearly_{}_aug_by_{}_num_{}_nw.h5'.format(window, args.combinations, args.num_samples)
 else:
-    n = 'data/yearly_{}_aug_by_{}_num_{}.csv'.format(window, args.combinations, args.num_samples)
+    n = 'data/yearly_{}_aug_by_{}_num_{}.h5'.format(window, args.combinations, args.num_samples)
 
-print('Saving data at:', n)
-np.savetxt(n, syn, delimiter=',')
+print('Saving files to:', n)
+
+with h5py.File(n, 'w') as hf:
+    hf.create_dataset('X', data=X)
+    hf.create_dataset('y', data=y)

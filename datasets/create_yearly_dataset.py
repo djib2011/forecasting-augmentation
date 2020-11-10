@@ -7,6 +7,7 @@ import pickle as pkl
 from sklearn.preprocessing import MinMaxScaler
 import argparse
 import warnings
+import h5py
 import os
 import sys
 
@@ -92,31 +93,25 @@ X = X[np.all((Y < 10) & (Y > -10), axis=1)]
 Y = Y[np.all((Y < 10) & (Y > -10), axis=1)]
 
 if args.line:
-    pkl.dump(sc, open('data/yearly_{}_scales_line.pkl'.format(window), 'wb'))
-    np.savetxt('data/yearly_{}_X_line.csv'.format(window), X, delimiter=',')
-    np.savetxt('data/yearly_{}_y_line.csv'.format(window), Y, delimiter=',')
-
-    print('Saved files:')
-    print('data/yearly_{}_scales_line.pkl'.format(window))
-    print('data/yearly_{}_X_line.csv'.format(window))
-    print('data/yearly_{}_y_line.csv'.format(window))
+    scale_file = 'data/yearly_{}_scales_line.pkl'.format(window)
+    data_file = 'data/yearly_{}_line.h5'.format(window)
 
 elif args.no_window:
-    pkl.dump(sc, open('data/yearly_{}_scales_nw.pkl'.format(window), 'wb'))
-    np.savetxt('data/yearly_{}_X_nw.csv'.format(window), X, delimiter=',')
-    np.savetxt('data/yearly_{}_y_nw.csv'.format(window), Y, delimiter=',')
-
-    print('Saved files:')
-    print('data/yearly_{}_scales_nw.pkl'.format(window))
-    print('data/yearly_{}_X_nw.csv'.format(window))
-    print('data/yearly_{}_y_nw.csv'.format(window))
+    scale_file = 'data/yearly_{}_scales_nw.pkl'.format(window)
+    data_file = 'data/yearly_{}_nw.h5'.format(window)
 
 else:
-    pkl.dump(sc, open('data/yearly_{}_scales.pkl'.format(window), 'wb'))
-    np.savetxt('data/yearly_{}_X.csv'.format(window), X, delimiter=',')
-    np.savetxt('data/yearly_{}_y.csv'.format(window), Y, delimiter=',')
+    scale_file = 'data/yearly_{}_scales.pkl'.format(window)
+    data_file = 'data/yearly_{}.h5'.format(window)
 
-    print('Saved files:')
-    print('data/yearly_{}_scales.pkl'.format(window))
-    print('data/yearly_{}_X.csv'.format(window))
-    print('data/yearly_{}_y.csv'.format(window))
+with open(scale_file, 'wb') as f:
+    pkl.dump(scale_file, f)
+
+hf = h5py.File(data_file, 'w')
+hf.create_dataset('X', data=X)
+hf.create_dataset('y', data=Y)
+hf.close()
+
+print('Saved files:')
+print(scale_file)
+print(data_file)
