@@ -83,50 +83,40 @@ for s in tqdm(data.values):
 X = np.vstack(X)
 Y = np.vstack(Y)
 
-X_train, X_test, y_train, y_test = train_test_split(X, Y)
-print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+sc = MinMaxScaler()
+X = sc.fit_transform(X.T).T
+Y = sc.transform(Y.T).T
 
-sc_train = MinMaxScaler()
-X_train = sc_train.fit_transform(X_train.T).T
-y_train = sc_train.transform(y_train.T).T
-
-sc_test = MinMaxScaler()
-X_test = sc_train.fit_transform(X_test.T).T
-y_test = sc_train.transform(y_test.T).T
+# Clear outliers
+X = X[np.all((Y < 10) & (Y > -10), axis=1)]
+Y = Y[np.all((Y < 10) & (Y > -10), axis=1)]
 
 if args.line:
-    pkl.dump(sc_train, open('data/yearly_{}_scales_train_line.pkl'.format(window), 'wb'))
-    pkl.dump(sc_test, open('data/yearly_{}_scales_test_line.pkl'.format(window), 'wb'))
-    pkl.dump((X_train, y_train), open('data/yearly_{}_train_line.pkl'.format(window), 'wb'))
-    pkl.dump((X_test, y_test), open('data/yearly_{}_validation_line.pkl'.format(window), 'wb'))
+    pkl.dump(sc, open('data/yearly_{}_scales_line.pkl'.format(window), 'wb'))
+    np.savetxt('data/yearly_{}_X_line.csv'.format(window), X, delimiter=',')
+    np.savetxt('data/yearly_{}_y_line.csv'.format(window), Y, delimiter=',')
 
     print('Saved files:')
-    print('data/yearly_{}_scales_train_line.pkl'.format(window))
-    print('data/yearly_{}_scales_test_line.pkl'.format(window))
-    print('data/yearly_{}_train_line.pkl'.format(window))
-    print('data/yearly_{}_validation_line.pkl'.format(window))
+    print('data/yearly_{}_scales_line.pkl'.format(window))
+    print('data/yearly_{}_X_line.csv'.format(window))
+    print('data/yearly_{}_y_line.csv'.format(window))
 
 elif args.no_window:
-    pkl.dump(sc_train, open('data/yearly_{}_scales_train_nw.pkl'.format(window), 'wb'))
-    pkl.dump(sc_test, open('data/yearly_{}_scales_test_nw.pkl'.format(window), 'wb'))
-    pkl.dump((X_train, y_train), open('data/yearly_{}_train_nw.pkl'.format(window), 'wb'))
-    pkl.dump((X_test, y_test), open('data/yearly_{}_validation_nw.pkl'.format(window), 'wb'))
+    pkl.dump(sc, open('data/yearly_{}_scales_nw.pkl'.format(window), 'wb'))
+    np.savetxt('data/yearly_{}_X_nw.csv'.format(window), X, delimiter=',')
+    np.savetxt('data/yearly_{}_y_nw.csv'.format(window), Y, delimiter=',')
 
     print('Saved files:')
-    print('data/yearly_{}_scales_train_nw.pkl'.format(window))
-    print('data/yearly_{}_scales_test_nw.pkl'.format(window))
-    print('data/yearly_{}_train_nw.pkl'.format(window))
-    print('data/yearly_{}_validation_nw.pkl'.format(window))
+    print('data/yearly_{}_scales_nw.pkl'.format(window))
+    print('data/yearly_{}_X_nw.csv'.format(window))
+    print('data/yearly_{}_y_nw.csv'.format(window))
 
 else:
-    pkl.dump(sc_train, open('data/yearly_{}_scales_train.pkl'.format(window), 'wb'))
-    pkl.dump(sc_test, open('data/yearly_{}_scales_test.pkl'.format(window), 'wb'))
-    pkl.dump((X_train, y_train), open('data/yearly_{}_train.pkl'.format(window), 'wb'))
-    pkl.dump((X_test, y_test), open('data/yearly_{}_validation.pkl'.format(window), 'wb'))
+    pkl.dump(sc, open('data/yearly_{}_scales.pkl'.format(window), 'wb'))
+    np.savetxt('data/yearly_{}_X.csv'.format(window), X, delimiter=',')
+    np.savetxt('data/yearly_{}_y.csv'.format(window), Y, delimiter=',')
 
     print('Saved files:')
-    print('data/yearly_{}_scales_train.pkl'.format(window))
-    print('data/yearly_{}_scales_test.pkl'.format(window))
-    print('data/yearly_{}_train.pkl'.format(window))
-    print('data/yearly_{}_validation.pkl'.format(window))
-
+    print('data/yearly_{}_scales.pkl'.format(window))
+    print('data/yearly_{}_X.csv'.format(window))
+    print('data/yearly_{}_y.csv'.format(window))

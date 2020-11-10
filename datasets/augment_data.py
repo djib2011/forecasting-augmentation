@@ -23,25 +23,22 @@ window = args.input_len + 6
 
 # Load data
 if args.no_window:
-    n = 'data/yearly_{}_train_nw.pkl'.format(window)
+    n = 'data/yearly_{}_X_nw.csv'.format(window)
 else:
-    n = 'data/yearly_{}_train.pkl'.format(window)
+    n = 'data/yearly_{}_X.csv'.format(window)
 
 with open(n, 'rb') as f:
-    data = pkl.load(f)
+    data = np.loadtxt(n, delimiter=',')
 
 # Generate synthetic samples
 s = [np.random.choice(np.arange(len(data[0])), args.num_samples, replace=True) for _ in range(args.combinations)]
-syn = [np.sum([d[i] for i in s], axis=0) / args.combinations for d in data]
+syn = np.array([np.sum([d[i] for i in s], axis=0) / args.combinations for d in data])
 
 # Store new
 if args.no_window:
-    n = 'data/yearly_{}_train_aug_by_{}_num_{}_nw.pkl'.format(window, args.combinations, args.num_samples)
+    n = 'data/yearly_{}_aug_by_{}_num_{}_nw.csv'.format(window, args.combinations, args.num_samples)
 else:
-    n = 'data/yearly_{}_train_aug_by_{}_num_{}.pkl'.format(window, args.combinations, args.num_samples)
+    n = 'data/yearly_{}_aug_by_{}_num_{}.csv'.format(window, args.combinations, args.num_samples)
 
 print('Saving data at:', n)
-
-with open(n, 'wb') as f:
-    pkl.dump(syn, f)
-
+np.savetxt(n, syn, delimiter=',')
