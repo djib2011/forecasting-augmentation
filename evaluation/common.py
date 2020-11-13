@@ -26,10 +26,12 @@ def get_predictions(model, X, batch_size=256):
     return np.vstack(preds)
 
 
-def evaluate_snapshot_ensemble(family, x, y, results=None):
+def evaluate_snapshot_ensemble(family, x, y, result_dict=None):
 
-    if not results:
+    if not result_dict:
         results = {'smape': {}, 'mase*': {}}
+    else:
+        results = result_dict.copy()
 
     family = Path(family)
     num_trials = len(list(Path(family.parent).glob(family.name + '*')))
@@ -53,8 +55,8 @@ def evaluate_snapshot_ensemble(family, x, y, results=None):
 
         ensemble_preds = np.median(np.array(family_preds), axis=0)
 
-        results['smape'][family.name + '_ens__' + str(num + 1)] = np.nanmean(metrics.SMAPE(y, ensemble_preds[:, -6:]))
-        results['mase*'][family.name + '_ens__' + str(num + 1)] = np.nanmean(metrics.MASE(x, y, ensemble_preds[:, -6:]))
+        results['smape'][family.name + '__ens__' + str(num + 1)] = np.nanmean(metrics.SMAPE(y, ensemble_preds[:, -6:]))
+        results['mase*'][family.name + '__ens__' + str(num + 1)] = np.nanmean(metrics.MASE(x, y, ensemble_preds[:, -6:]))
 
     return results
 
@@ -64,6 +66,8 @@ def evaluate_snapshot_ensembles(families, x, y):
 
     for family in tqdm(families):
         results = evaluate_snapshot_ensemble(family, x, y, results)
+
+    return results
 
 
 def find_untracked_trials(result_dir, tracked, verbose=False):
