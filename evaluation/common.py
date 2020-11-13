@@ -2,6 +2,8 @@ import numpy as np
 from tqdm import tqdm
 from pathlib import Path
 import tensorflow as tf
+import warnings
+
 from utils import metrics
 
 
@@ -38,7 +40,6 @@ def evaluate_snapshot_ensemble(family, x, y, results=None):
         trial = str(family) + '__' + str(num)
         model_dir = trial + '/best_weights.h5'
 
-
         model = tf.keras.models.load_model(model_dir)
 
         preds = get_predictions(model, x)
@@ -62,3 +63,41 @@ def evaluate_snapshot_ensembles(families, x, y):
 
     for family in tqdm(families):
         results = evaluate_snapshot_ensemble(family, results, x, y)
+
+
+def find_untracked_trials(result_dir, tracked, verbose=False):
+
+    all_trials = list(Path(result_dir).glob('*'))
+    families, num_trials = np.unique(['__'.join(t.name.split('__')[:-1]) for t in all_trials], return_counts=True)
+    untracked, undertracked = {}, {}
+
+    for f, n in zip(families, num_trials):
+        expected = tracked.get(f, 0)
+        if not expected:
+            untracked[f] = n
+        elif expected < n:
+            undertracked[f] = n
+        elif expected > n:
+            warnings.warn('More tracked trials recorded than found for family: {}\n'
+                          '    Tracked: {}\n'
+                          '    Found:   {}'.format(f, expected, n))
+
+    tr = set(tracked.keys())
+    ut = set(untracked.keys()).union(undertracked.keys())
+    redundant = {k: tracked[k] for k in tr.difference(ut)}
+
+    if verbose:
+        l = max([len(f) for f in families])
+        template = '        {:>' + str(l) + '} --> found: {}, expected: {}'
+        print('Found {} unique trials belonging to {} families'.format(len(all_trials), len(families)))
+        print('    Already tracked families:', len(tracked))
+        print('    Untracked families found:', len(untracked))
+        print('    Undertracked families:   ', len(undertracked))
+        for f, n in undertracked.items():
+            print(template.format(f, n, tracked[f]))
+        print('    Redundant families:      ', len(undertracked))
+        for f, n in redundant.items():
+            print(template.format(f, n, tracked[f]))
+
+    return untracked, undertracked, redundant
+

@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
-import evaluation
+import pickle as pkl
+from pathlib import Path
 
-results_dir = 'results/comb_nw/'
+import evaluation
+import datasets
 
 
 def create_results_df(results):
@@ -27,3 +29,30 @@ def create_results_df(results):
         df[column] = df[column].apply(lambda x: x.split('_')[1])
 
     return df
+
+
+if __name__ == '__main__':
+
+    result_dir = 'results/comb_nw/'
+    report_dir = 'reports/comb_nw/'
+
+    tracked_file = (Path(report_dir) / 'tracked.pkl')
+    if tracked_file.exists():
+        with open(tracked_file, 'wb') as f:
+            tracked = pkl.load(f)
+    else:
+        tracked = {}
+
+    untracked, undertracked, _ = evaluation.find_untracked_trials(result_dir, tracked, verbose=True)
+    untracked.update(undertracked)
+
+    X_test, y_test = datasets.load_test_set()
+
+    results = evaluation.evaluate_snapshot_ensembles(untracked, X_test, y_test)
+
+    result_df_file = (Path(report_dir) / 'results.csv')
+    if result_df_file.exists():
+        df = pd.read_csv(result_df_file)
+        df = pd.concat([df, create_results_df(results)])
+    else:
+        df = create_results_df(results)
