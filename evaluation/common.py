@@ -3,6 +3,7 @@ from tqdm import tqdm
 from pathlib import Path
 import tensorflow as tf
 import warnings
+import pickle as pkl
 
 from utils import metrics
 
@@ -38,8 +39,8 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None):
     
     family_preds = []
 
-    for num in range(4):#range(num_trials):
-        print(num)
+    for num in tqdm(range(100)):#range(num_trials):
+        
         trial = str(family) + '__' + str(num)
         model_dir = trial + '/best_weights.h5'
 
@@ -64,8 +65,10 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None):
 def evaluate_snapshot_ensembles(families, x, y):
     results = {'smape': {}, 'mase*': {}}
 
-    for family in tqdm(families):
+    for family in families:#tqdm(families):
         results = evaluate_snapshot_ensemble(family, x, y, results)
+        with open('/tmp/{}.pkl'.format(family.name), 'wb') as f:
+            pkl.dump(results, f)
 
     return results
 
