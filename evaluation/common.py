@@ -31,12 +31,13 @@ def evaluate_snapshot_ensemble(family, x, y, results=None):
     if not results:
         results = {'smape': {}, 'mase*': {}}
 
-    num_trials = len(list(Path(family).glob('*')))
-
+    family = Path(family)
+    num_trials = len(list(Path(family.parent).glob(family.name + '*')))
+    
     family_preds = []
 
-    for num in range(num_trials):
-
+    for num in range(4):#range(num_trials):
+        print(num)
         trial = str(family) + '__' + str(num)
         model_dir = trial + '/best_weights.h5'
 
@@ -62,7 +63,7 @@ def evaluate_snapshot_ensembles(families, x, y):
     results = {'smape': {}, 'mase*': {}}
 
     for family in tqdm(families):
-        results = evaluate_snapshot_ensemble(family, results, x, y)
+        results = evaluate_snapshot_ensemble(family, x, y, results)
 
 
 def find_untracked_trials(result_dir, tracked, verbose=False):
