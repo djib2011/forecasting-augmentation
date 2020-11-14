@@ -36,13 +36,17 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None):
 
     family = Path(family)
     num_trials = len(list(Path(family.parent).glob(family.name + '*')))
+    trials = Path(family.parent).glob(family.name + '*')
     
     family_preds = []
+    num = 0
 
-    for num in tqdm(range(100)):#range(num_trials):
-        
-        trial = str(family) + '__' + str(num)
-        model_dir = trial + '/best_weights.h5'
+    for trial in trials:
+    #for num in tqdm(range(100)):#range(num_trials):
+
+        #trial = str(family) + '__' + str(num)
+        num += 1
+        model_dir = trial / 'best_weights.h5'
 
         model = tf.keras.models.load_model(model_dir)
 
@@ -51,13 +55,13 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None):
 
         tf.keras.backend.clear_session()
 
-        results['smape'][Path(trial).name] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
-        results['mase*'][Path(trial).name] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
+        results['smape'][family.name + '__' + str(num)] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
+        results['mase*'][family.name + '__' + str(num)] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
 
         ensemble_preds = np.median(np.array(family_preds), axis=0)
 
-        results['smape'][family.name + '__ens__' + str(num + 1)] = np.nanmean(metrics.SMAPE(y, ensemble_preds[:, -6:]))
-        results['mase*'][family.name + '__ens__' + str(num + 1)] = np.nanmean(metrics.MASE(x, y, ensemble_preds[:, -6:]))
+        results['smape'][family.name + '__ens__' + str(num)] = np.nanmean(metrics.SMAPE(y, ensemble_preds[:, -6:]))
+        results['mase*'][family.name + '__ens__' + str(num)] = np.nanmean(metrics.MASE(x, y, ensemble_preds[:, -6:]))
 
     return results
 
