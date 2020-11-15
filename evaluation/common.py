@@ -36,12 +36,13 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None):
 
     family = Path(family)
     num_trials = len(list(Path(family.parent).glob(family.name + '*')))
-    trials = Path(family.parent).glob(family.name + '*')
-    
+    trials = list(Path(family.parent).glob(family.name + '*'))  # list for tqdm
+    trials = [p for p in Path(family.parent).glob(family.name + '*') if '23000000' not in p.name]  # list for tqdm
+
     family_preds = []
     num = 0
 
-    for trial in trials:
+    for trial in tqdm(trials):
     #for num in tqdm(range(100)):#range(num_trials):
 
         #trial = str(family) + '__' + str(num)
