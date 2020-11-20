@@ -1,4 +1,5 @@
 import tensorflow as tf
+import itertools
 import utils
 
 
@@ -13,3 +14,12 @@ def train_model(model, train_set, run_name, run_num, cycles=15, batch_size=256):
     model.fit(train_set, epochs=epochs, steps_per_epoch=len(train_set)//batch_size+1, callbacks=callbacks)
 
     return model
+
+
+def make_runs(hparam_combinations_dict):
+
+    names = hparam_combinations_dict.keys()
+    combs = itertools.product(*hparam_combinations_dict.values())
+
+    for c in combs:
+        yield dict(zip(names, c))

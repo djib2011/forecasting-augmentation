@@ -19,20 +19,24 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--input_len', type=int, default=18, help='Insample length.')
 parser.add_argument('-c', '--combinations', type=int, default=2,
                     help='Number of series combined to produce augmentations.')
+parser.add_argument('-r', '--real', action='store_true', help='Use the real (not augmented) samples.')
 parser.add_argument('-n', '--num_samples', type=int, default=23000, help='Number of augmented samples.')
 parser.add_argument('--debug', action='store_true', help='Run in debug mode: Don\'t train any of the models and print '
                                                          'lots of diagnostic messages.')
 
 args = parser.parse_args()
 
-data_path = 'data/yearly_{}_aug_by_{}_num_{}_nw.h5'.format(args.input_len + 6, args.combinations, args.num_samples)
+if args.real:
+    data_path = 'data/yearly_{}_nw.h5'.format(args.input_len + 6)
+    run_name = 'comb_nw/inp_{}__real'.format(args.input_len)
+else:
+    data_path = 'data/yearly_{}_aug_by_{}_num_{}_nw.h5'.format(args.input_len + 6, args.combinations, args.num_samples)
+    run_name = 'comb_nw/inp_{}__num_{}__comb_{}'.format(args.input_len, args.num_samples, args.combinations)
 
 data = datasets.seq2seq_generator(data_path, batch_size=1024)
 
-run_name = 'comb_nw/inp_{}__num_{}__comb_{}'.format(args.input_len, args.num_samples, args.combinations)
-
 hp = {'base_layer_size': 16, 'input_seq_length': args.input_len, 'output_seq_length': 6}
-model = models.sequential.bidirectional_ae_2_layer(hp)
+model = models.sequential.bidirectional_3_layer(hp)
 
 for i in range(10):
     if args.debug:
