@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pickle as pkl
+import argparse
 from pathlib import Path
 import sys
 
@@ -36,6 +37,15 @@ def create_results_df(results):
 
 if __name__ == '__main__':
 
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--debug', action='store_true',
+                        help='Run in debug mode: Don\'t evaluate any of the models; print lots of diagnostic messages.')
+
+    args = parser.parse_args()
+
     result_dir = 'results/comb_nw/'
     report_dir = 'reports/comb_nw/'
 
@@ -52,14 +62,27 @@ if __name__ == '__main__':
     X_test, y_test = datasets.load_test_set()
 
     families = [Path(result_dir) / u for u in untracked]
-    results = evaluation.evaluate_snapshot_ensembles(families, X_test, y_test)
 
-    result_df_file = (Path(report_dir) / 'results.csv')
-    if result_df_file.exists():
-        df = pd.read_csv(result_df_file)
-        df = pd.concat([df, create_results_df(results)])
+    if args.debug:
+        if untracked:
+            print('Untracked trials:')
+            for i, t in enumerate(untracked):
+                print('{:>2}. {}'.format(i, t))
+
+        if undertracked:
+            print('Undertracked trials:')
+            for i, t in enumerate(undertracked):
+                print('{:>2}. {}'.format(i, t))
+
     else:
-        df = create_results_df(results)
+        results = evaluation.evaluate_snapshot_ensembles(families, X_test, y_test)
 
-    df.to_csv(result_df_file, index=False)
+        result_df_file = (Path(report_dir) / 'results.csv')
+        if result_df_file.exists():
+            df = pd.read_csv(result_df_file)
+            df = pd.concat([df, create_results_df(results)])
+        else:
+            df = create_results_df(results)
+
+        df.to_csv(result_df_file, index=False)
 
