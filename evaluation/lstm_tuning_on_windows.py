@@ -20,9 +20,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    result_dir = 'results/comb_nw/'
-    report_dir = 'reports/comb_nw/'
+    result_dir = 'results/lstm_tuning_windows/'
+    report_dir = 'reports/lstm_tuning_windows/'
 
-    columns = ['input_len', 'n_samples', 'combinations']
+    columns = ['input_len', 'direction', 'size', 'depth']
 
     evaluation.run_evaluation(result_dir=result_dir, report_dir=report_dir, columns=columns, debug=args.debug)
