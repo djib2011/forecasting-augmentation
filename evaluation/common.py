@@ -149,7 +149,7 @@ def create_results_df(results, columns):
     return df
 
 
-def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, debug=False):
+def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return_results=False, debug=False):
 
     tracked_file = (Path(report_dir) / 'tracked.pkl')
     if tracked_file.exists():
@@ -161,7 +161,8 @@ def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, debug=
     untracked, undertracked, _ = find_untracked_trials(result_dir, tracked, exclude_pattern=exclude_pattern,
                                                        verbose=True)
     untracked.update(undertracked)
-
+    tracked.update(untracked)
+    
     X_test, y_test = datasets.load_test_set()
 
     families = [Path(result_dir) / u for u in untracked]
@@ -179,6 +180,9 @@ def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, debug=
 
     else:
         results = evaluate_snapshot_ensembles(families, X_test, y_test)
+        
+        if return_results:
+            return results, tracked
 
         result_df_file = (Path(report_dir) / 'results.csv')
         if result_df_file.exists():
@@ -186,10 +190,9 @@ def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, debug=
             df = pd.concat([df, create_results_df(results, columns=columns)])
         else:
             df = create_results_df(results, columns=columns)
-
+        
+        # TODO: make dir if it doesn't exist
         df.to_csv(result_df_file, index=False)
 
-        tracked.update(untracked)
-
         with open(tracked_file, 'wb') as f:
-            pkl.dump(tracked, tracked_file)
+            pkl.dump(tracked, f)

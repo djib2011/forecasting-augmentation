@@ -21,7 +21,7 @@ def create_results_df(results):
     df1['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in single_keys]
 
     ens_keys = [k for k in results['smape'].keys() if 'ens' in k]
-    df2 = pd.DataFrame([k.replace('__ens', '').split('__') for k in ens_keys], columns=columns + ['num'])
+    df2 = pd.DataFrame([k.replace('__ens', '').split('__') for k in ens_keys], columns=columns + ['real', 'num'])
     df2['ensemble'] = True
     df2['smape'] = [results['smape'][k] if results['smape'][k] else np.nan for k in ens_keys]
     df2['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in ens_keys]
@@ -51,7 +51,13 @@ if __name__ == '__main__':
     result_dir = 'results/comb_nw/'
     report_dir = 'reports/benchmark/'
 
-    columns = ['input_len', 'real']
+    columns = ['input_len']
 
-    evaluation.run_evaluation(result_dir=result_dir, report_dir=report_dir, columns=columns, exclude_pattern='comb',
-                              debug=args.debug)
+    results, tracked = evaluation.run_evaluation(result_dir=result_dir, report_dir=report_dir, columns=columns, exclude_pattern='comb',
+                                                 return_results=True, debug=args.debug)
+
+    df = create_results_df(results)
+    df.to_csv(report_dir + 'results.csv', index=False)
+
+    with open(report_dir + 'trached.pkl', 'wb') as f:
+        pkl.dump(tracked, f)
