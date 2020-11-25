@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
 import tensorflow as tf
@@ -28,7 +29,7 @@ def get_predictions(model, X, batch_size=256):
     return np.vstack(preds)
 
 
-def evaluate_snapshot_ensemble(family, x, y, result_dict=None):
+def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None):
 
     if not result_dict:
         results = {'smape': {}, 'mase*': {}}
@@ -43,10 +44,8 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None):
     family_preds = []
     num = 0
 
-    for trial in tqdm(trials):
-    #for num in tqdm(range(100)):#range(num_trials):
+    for trial in tqdm(trials, desc=desc):
 
-        #trial = str(family) + '__' + str(num)
         num += 1
         model_dir = trial / 'best_weights.h5'
 
@@ -71,17 +70,26 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None):
 def evaluate_snapshot_ensembles(families, x, y):
     results = {'smape': {}, 'mase*': {}}
 
-    for family in families:#tqdm(families):
-        results = evaluate_snapshot_ensemble(family, x, y, results)
+    if len(families) > 1:
+        num_digits = str(len(str(len(families))))
+        template = 'family {:>' + num_digits + '} of {:<' + num_digits + '}'
+    else:
+        template = ''
+
+    for i, family in enumerate(families):
+        results = evaluate_snapshot_ensemble(family, x, y, results, desc=template.format(i+1, len(families)))
         with open('/tmp/{}.pkl'.format(family.name), 'wb') as f:
             pkl.dump(results, f)
 
     return results
 
 
-def find_untracked_trials(result_dir, tracked, verbose=False):
+def find_untracked_trials(result_dir, tracked, exclude_pattern=None, verbose=False):
 
     all_trials = list(Path(result_dir).glob('*'))
+    if exclude_pattern:
+        all_trials = [p for p in all_trials if exclude_pattern not in p.name]
+
     families, num_trials = np.unique(['__'.join(t.name.split('__')[:-1]) for t in all_trials], return_counts=True)
     untracked, undertracked = {}, {}
 
@@ -133,12 +141,15 @@ def create_results_df(results, columns):
     df = pd.concat([df1, df2])
 
     for column in columns:
-        df[column] = df[column].apply(lambda x: x.split('_')[1])
+        try:
+            df[column] = df[column].apply(lambda x: x.split('_')[1])
+        except IndexError:
+            raise IndexError('Trying to split column {}'.format(column))
 
     return df
 
 
-def run_evaluation(result_dir, report_dir, columns, debug=False):
+def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, debug=False):
 
     tracked_file = (Path(report_dir) / 'tracked.pkl')
     if tracked_file.exists():
@@ -147,7 +158,8 @@ def run_evaluation(result_dir, report_dir, columns, debug=False):
     else:
         tracked = {}
 
-    untracked, undertracked, _ = find_untracked_trials(result_dir, tracked, verbose=True)
+    untracked, undertracked, _ = find_untracked_trials(result_dir, tracked, exclude_pattern=exclude_pattern,
+                                                       verbose=True)
     untracked.update(undertracked)
 
     X_test, y_test = datasets.load_test_set()
@@ -158,12 +170,12 @@ def run_evaluation(result_dir, report_dir, columns, debug=False):
         if untracked:
             print('Untracked trials:')
             for i, t in enumerate(untracked):
-                print('{:>2}. {}'.format(i, t))
+                print('{:>2}. {}'.format(i+1, t))
 
         if undertracked:
             print('Undertracked trials:')
             for i, t in enumerate(undertracked):
-                print('{:>2}. {}'.format(i, t))
+                print('{:>2}. {}'.format(i+1, t))
 
     else:
         results = evaluate_snapshot_ensembles(families, X_test, y_test)
