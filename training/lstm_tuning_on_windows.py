@@ -27,18 +27,6 @@ data_path = 'data/yearly_{}.h5'.format(args.input_len + 6)
 data = datasets.seq2seq_generator(data_path, batch_size=1024)
 
 
-def run_training(model, data, run_name, num_cold_starts=5, debug=False):
-
-    if debug:
-        for x, y in data:
-            print('Batch shapes:', x.shape, y.shape)
-            model.train_on_batch(x, y)
-            break
-    else:
-        for i in range(num_cold_starts):
-            _ = training.train_model(model, data, run_name, run_num=i)
-
-
 hp_comb_dict = {'base_layer_size': [16, 32, 64, 128],
                 'direction': ['uni', 'bi'],
                 'depth': [2, 3, 4],
@@ -58,4 +46,4 @@ for hp in hp_generator:
     if args.debug:
         print('run name:', run_name)
 
-    run_training(model, data, run_name, debug=args.debug)
+    training.run_training(model, data, run_name, num_runs=10, debug=args.debug, epochs=50)

@@ -16,19 +16,33 @@ def train_model_snapshot(model, train_set, run_name, run_num, cycles=15, batch_s
     return model
 
 
-<<<<<<< HEAD
-def train_model_single(model, train_set, run_name, run_num, cycles=15, batch_size=256):
+def train_model_single(model, train_set, run_name, run_num, epochs=15, batch_size=256):
 
     result_file = 'results/{}__{}/'.format(run_name, run_num) + 'weights_epoch_{epoch:02d}.h5'
 
-    epochs = cycles
     callbacks = [tf.keras.callbacks.ModelCheckpoint(result_file, monitor='loss', verbose=1,
                                                     save_best_only=False, period=1)]
 
     model.fit(train_set, epochs=epochs, steps_per_epoch=len(train_set)//batch_size+1, callbacks=callbacks)
 
     return model
-=======
+
+
+def run_training(model, data, run_name, num_runs=5, debug=False, snapshot=False, **kwargs):
+
+    single_model_training_fcn = train_model_snapshot if snapshot else train_model_single
+
+    if debug:
+        for x, y in data:
+            print('Batch shapes:', x.shape, y.shape)
+            model.train_on_batch(x, y)
+            break
+    else:
+        for i in range(num_runs):
+
+            _ = single_model_training_fcn(model, data, run_name, run_num=i, **kwargs)
+
+
 def make_runs(hparam_combinations_dict):
 
     names = hparam_combinations_dict.keys()
@@ -36,4 +50,4 @@ def make_runs(hparam_combinations_dict):
 
     for c in combs:
         yield dict(zip(names, c))
->>>>>>> d5aeece2749439e810bfa0d4f475fce3ffa31e4a
+
