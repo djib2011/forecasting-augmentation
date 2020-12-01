@@ -36,7 +36,7 @@ data = np.c_[X, y]
 del X, y
 
 # Generate synthetic samples
-samples_list = [np.random.choice(np.arange(len(data[0])), args.num_samples, replace=True) for _ in range(args.combinations)]
+samples_list = [np.random.choice(np.arange(data.shape[0]), args.num_samples, replace=True) for _ in range(args.combinations)]
 syn = np.array([np.sum([data[s[i]] for s in samples_list], axis=0) / args.combinations for i in range(args.num_samples)])
 
 X = syn[:, :-6]

@@ -31,3 +31,23 @@ def load_test_set(data_dir: Union[Path, str] = 'data'):
     y_test = test_set.values
 
     return X_test, y_test
+
+
+def make_combinations(data, num_samples, num_combs, seed):
+
+    np.random.seed(seed)
+
+    samples_list = [np.random.choice(np.arange(data.shape[0]), num_samples, replace=True) for _ in range(num_combs)]
+
+    syn = np.array([np.sum([data[s[i]] for s in samples_list], axis=0) / num_combs for i in range(num_samples)])
+
+    return syn
+
+
+def normalize_data(data):
+
+    mx = data[:, :-6].max(axis=1).reshape(-1, 1)
+    mn = data[:, :-6].min(axis=1).reshape(-1, 1)
+
+    return (data - mn) / (mx - mn)
+
