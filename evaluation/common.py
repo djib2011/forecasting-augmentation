@@ -37,9 +37,7 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None):
         results = result_dict.copy()
 
     family = Path(family)
-    num_trials = len(list(Path(family.parent).glob(family.name + '*')))
     trials = list(Path(family.parent).glob(family.name + '*'))  # list for tqdm
-    trials = [p for p in Path(family.parent).glob(family.name + '*') if '23000000' not in p.name]  # list for tqdm
 
     family_preds = []
     num = 0
@@ -84,7 +82,10 @@ def evaluate_snapshot_ensembles(families, x, y):
     return results
 
 
-def find_untracked_trials(result_dir, tracked, exclude_pattern=None, verbose=False):
+def find_untracked_trials(result_dir, tracked=None, exclude_pattern=None, verbose=False):
+
+    if not tracked:
+        tracked = {}
 
     all_trials = list(Path(result_dir).glob('*'))
     if exclude_pattern:
