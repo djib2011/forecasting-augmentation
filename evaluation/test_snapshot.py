@@ -5,6 +5,14 @@ sys.path.append('.')
 import evaluation
 import datasets
 
+
+def create_results_df_snap(results):
+    df = pd.DataFrame(results).reset_index()
+    df['num'] = df['index'].apply(lambda x: x.split('__')[-1])
+    df['ens'] = df['index'].apply(lambda x: 'ens' in x)
+    return df.drop(columns='index')
+
+
 if __name__ == '__main__':
 
     import argparse
@@ -21,9 +29,9 @@ if __name__ == '__main__':
 
     X_test, y_test = datasets.load_test_set()
 
-    untracked, _, _ = evaluation.find_untracked_trials(result_dir, exclude_pattern='no_snapshot', verbose=True)
-    results_with = evaluation.evaluate_snapshot_ensemble(untracked, X_test, y_test)
+    results_with = evaluation.evaluate_snapshot_ensemble(result_dir + 'with_shapshot', X_test, y_test)
+    df_with = create_results_df(results_with)
 
-    untracked, _, _ = evaluation.find_untracked_trials(result_dir, exclude_pattern='with_snapshot', verbose=True)
-    results_without = evaluation.evaluate_snapshot_ensemble(untracked, X_test, y_test)
+    results_without = evaluation.evaluate_snapshot_ensemble(result_dir + 'no_shapshot', X_test, y_test)
+    df_without = create_results_df(results_without)
 

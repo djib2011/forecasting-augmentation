@@ -35,11 +35,11 @@ model_gen = models.get(family='sequential', type=hp['direction'], depth=hp['dept
 
 # First run with snapshot ensemble
 model = model_gen(hp)
-run_name = 'test_snapshot/with_shapshot'
+run_name = 'test_snapshot/with_snapshot'
 training.run_training(model, data, run_name, num_runs=5, debug=args.debug, snapshot=True)
 
 # Run without snapshot ensemble
 del model
 model = model_gen(hp)
-run_name = 'test_snapshot/no_shapshot'
+run_name = 'test_snapshot/no_snapshot'
 training.run_training(model, data, run_name, num_runs=10, debug=args.debug, epochs=50, snapshot=False)
