@@ -34,7 +34,7 @@ if args.real:
     data_path = 'data/yearly_{}_nw.h5'.format(args.input_len + 6)
     run_name = 'comb_nw/inp_{}__real'.format(args.input_len)
 else:
-    data_path = 'data/aug_nw/yearly_{}_aug_by_{}_num_{}_nw.h5'.format(args.input_len + 6, args.combinations, args.num_samples)
+    data_path = 'data/aug_nw/yearly_{}_aug_by_{}_num_{}.h5'.format(args.input_len + 6, args.combinations, args.num_samples)
     run_name = 'comb_nw/inp_{}__num_{}__comb_{}'.format(args.input_len, args.num_samples, args.combinations)
 
 data = datasets.seq2seq_generator(data_path, batch_size=batch_size)
