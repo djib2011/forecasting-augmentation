@@ -1,3 +1,4 @@
+from pathlib import Path
 import numpy as np
 import os
 import tensorflow as tf
@@ -15,7 +16,7 @@ class SimpleModelCheckpoint(tf.keras.callbacks.Callback):
         p = Path(self.result_file.format(epoch=epoch))
 
         if self.verbose:
-            print('Saving weights to:', str(p))
+            print('\nSaving weights to:', str(p))
 
         if not p.parent.is_dir():
             os.makedirs(str(p.parent))
