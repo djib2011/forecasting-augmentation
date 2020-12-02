@@ -33,9 +33,10 @@ def load_test_set(data_dir: Union[Path, str] = 'data'):
     return X_test, y_test
 
 
-def make_combinations(data, num_samples, num_combs, seed):
+def make_combinations(data, num_samples, num_combs, seed=None):
 
-    np.random.seed(seed)
+    if seed is not None:
+        np.random.seed(seed)
 
     samples_list = [np.random.choice(np.arange(data.shape[0]), num_samples, replace=True) for _ in range(num_combs)]
 
@@ -49,5 +50,4 @@ def normalize_data(data):
     mx = data[:, :-6].max(axis=1).reshape(-1, 1)
     mn = data[:, :-6].min(axis=1).reshape(-1, 1)
 
-    return (data - mn) / (mx - mn)
-
+    return (data - mn) / (mx - mn + np.finfo('float').eps)

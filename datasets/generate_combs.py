@@ -15,7 +15,7 @@ original_data_path = '/home/artemis/AugmExp/Data/train_in18_all_windows.npy'
 target_data_dir = 'data/combinations/'
 
 # Load data
-data = np.load(original_data_path)
+data = np.load(original_data_path)[:, -24:]
 
 combinations = [2, 3, 5]
 num_samples = 235460

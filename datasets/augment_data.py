@@ -10,11 +10,13 @@ if os.getcwd().endswith('datasets'):
 
 sys.path.append(os.getcwd())
 
+import datasets
+
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-i', '--input_len', type=int, default=12, help='Insample length.')
-parser.add_argument('-n', '--num_samples', type=int, default=100000, help='Number of samples after augmentation.')
+parser.add_argument('-i', '--input_len', type=int, default=18, help='Insample length.')
+parser.add_argument('-n', '--num_samples', type=int, default=14000, help='Number of samples after augmentation.')
 parser.add_argument('-c', '--combinations', type=int, default=2, help='Number of series to combine.')
 parser.add_argument('--no_window', action='store_true', help='Use the no-window version of the data')
 
@@ -36,8 +38,8 @@ data = np.c_[X, y]
 del X, y
 
 # Generate synthetic samples
-samples_list = [np.random.choice(np.arange(data.shape[0]), args.num_samples, replace=True) for _ in range(args.combinations)]
-syn = np.array([np.sum([data[s[i]] for s in samples_list], axis=0) / args.combinations for i in range(args.num_samples)])
+syn = datasets.make_combinations(data, num_samples=args.num_samples, num_combs=args.combinations, )
+syn = datasets.normalize_data(syn)
 
 X = syn[:, :-6]
 y = syn[:, -6:]
@@ -45,9 +47,9 @@ del syn
 
 # Locations to store augmented
 if args.no_window:
-    n = 'data/yearly_{}_aug_by_{}_num_{}_nw.h5'.format(window, args.combinations, args.num_samples)
+    n = 'data/aug_nw/yearly_{}_aug_by_{}_num_{}_nw.h5'.format(window, args.combinations, args.num_samples)
 else:
-    n = 'data/yearly_{}_aug_by_{}_num_{}.h5'.format(window, args.combinations, args.num_samples)
+    n = 'data/aug_nw/yearly_{}_aug_by_{}_num_{}.h5'.format(window, args.combinations, args.num_samples)
 
 print('Saving files to:', n)
 
