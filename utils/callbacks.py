@@ -3,6 +3,26 @@ import os
 import tensorflow as tf
 
 
+class SimpleModelCheckpoint(tf.keras.callbacks.Callback):
+
+    def __init__(self, result_file, verbose=False):
+        super().__init__()
+        self.result_file = result_file
+        self.verbose = verbose
+
+    def on_epoch_end(self, epoch, logs=None):
+
+        p = Path(self.result_file.format(epoch=epoch))
+
+        if self.verbose:
+            print('Saving weights to:', str(p))
+
+        if not p.parent.is_dir():
+            os.makedirs(str(p.parent))
+
+        self.model.save(str(p))
+
+
 class CosineAnnealingLearningRateSchedule(tf.keras.callbacks.Callback):
 
     def __init__(self, n_epochs, n_cycles, max_lr):

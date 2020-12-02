@@ -23,9 +23,9 @@ local = [x.name for x in Path(local_dir).glob('*')]
 
 to_be_uploaded = [str(Path(local_dir) / f) for f in set(local).difference(remote)]
 
-print('{:>4} log files found locally.'.format(len(local)))
-print('{:>4} log files found in remote server.'.format(len(remote)))
-print('{:>4} local log files are not in remote.'.format(len(to_be_uploaded)))
+print('{:>4} top-level files/directories found locally.'.format(len(local)))
+print('{:>4} top-level files/directories found in remote server.'.format(len(remote)))
+print('{:>4} local files/directories are not in remote.'.format(len(to_be_uploaded)))
 
 for f in tqdm(to_be_uploaded):
     if args.debug:
