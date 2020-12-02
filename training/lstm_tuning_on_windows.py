@@ -13,6 +13,12 @@ import argparse
 
 import training
 
+# Global configs
+num_runs=10
+batch_size=2048
+epochs=10
+snapshot=False
+
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 
@@ -25,7 +31,6 @@ args = parser.parse_args()
 data_path = 'data/yearly_{}.h5'.format(args.input_len + 6)
 
 data = datasets.seq2seq_generator(data_path, batch_size=1024)
-
 
 hp_comb_dict = {'base_layer_size': [16, 32, 64, 128],
                 'direction': ['uni', 'bi'],
@@ -46,4 +51,5 @@ for hp in hp_generator:
     if args.debug:
         print('run name:', run_name)
 
-    training.run_training(model, data, run_name, num_runs=10, debug=args.debug, epochs=50)
+    training.run_training(model, data, run_name, num_runs=num_runs, debug=args.debug,
+                          batch_size=batch_size, epochs=epochs, snapshot=snapshot)

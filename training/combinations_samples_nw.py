@@ -13,6 +13,10 @@ import argparse
 
 import training
 
+
+batch_size = 2048
+epochs = 15
+
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 
@@ -33,7 +37,7 @@ else:
     data_path = 'data/aug_nw/yearly_{}_aug_by_{}_num_{}_nw.h5'.format(args.input_len + 6, args.combinations, args.num_samples)
     run_name = 'comb_nw/inp_{}__num_{}__comb_{}'.format(args.input_len, args.num_samples, args.combinations)
 
-data = datasets.seq2seq_generator(data_path, batch_size=1024)
+data = datasets.seq2seq_generator(data_path, batch_size=batch_size)
 
 hp = {'base_layer_size': 16, 'input_seq_length': args.input_len, 'output_seq_length': 6}
 model = models.sequential.bidirectional_3_layer(hp)
@@ -45,4 +49,4 @@ for i in range(10):
             model.train_on_batch(x, y)
             break
     else:
-        _ = training.train_model(model, data, run_name, run_num=i)
+        _ = training.train_model_single(model, data, run_name, run_num=i, epochs=epochs, batch_size=batch_size)
