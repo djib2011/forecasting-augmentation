@@ -265,10 +265,7 @@ def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return
                 print('{:>2}. {}'.format(i+1, t))
 
     else:
-        if snapshot:
-            results = evaluate_snapshot_ensembles(families, X_test, y_test)
-        else:
-            results = evaluate_models_multiple_weights()
+        results = evaluate_multiple_families(families, X_test, y_test, snapshot=snapshot)
         
         if return_results:
             return results, tracked
