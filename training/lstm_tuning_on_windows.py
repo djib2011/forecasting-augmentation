@@ -14,10 +14,10 @@ import argparse
 import training
 
 # Global configs
-num_runs=10
-batch_size=2048
-epochs=10
-snapshot=False
+num_runs = 10
+batch_size = 2048
+epochs = 10
+snapshot = False
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()

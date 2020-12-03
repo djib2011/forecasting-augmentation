@@ -29,6 +29,60 @@ def get_predictions(model, X, batch_size=256):
     return np.vstack(preds)
 
 
+def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=None):
+
+    if not result_dict:
+        results = {'smape': {}, 'mase*': {}}
+    else:
+        results = result_dict.copy()
+
+    family = Path(family)
+    trials = list(family.parent.glob(family.name + '*'))  # list for tqdm
+
+    family_preds = None
+    trial_ind = 0
+
+    for trial in tqdm(trials, desc=desc):
+
+        all_model_preds_in_trial = []
+
+        trial = Path(trial)
+        all_models_in_trial = list(trial.glob('*'))
+
+        for epoch_ind, single_model in enumerate(all_models_in_trial):
+
+            model = tf.keras.models.load_model(single_model)
+
+            preds = get_predictions(model, x)
+
+            if not family_preds:
+                family_preds = [[] for _ in range(len(all_models_in_trial))]
+
+            family_preds[epoch_ind].append(preds)
+            all_model_preds_in_trial.append(preds)
+
+            tf.keras.backend.clear_session()
+
+            results['smape'][trial.name + '__epoch_' + str(epoch_ind + 1)] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
+            results['mase*'][trial.name + '__epoch_' + str(epoch_ind + 1)] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
+
+            ensemble_preds = np.median(np.array(all_model_preds_in_trial), axis=0)
+
+            results['smape'][trial.name + '__ens'] = np.nanmean(metrics.SMAPE(y, ensemble_preds[:, -6:]))
+            results['mase*'][trial.name + '__ens'] = np.nanmean(metrics.MASE(x, y, ensemble_preds[:, -6:]))
+
+        trial_ind += 1
+
+        for i, epoch_preds in enumerate(family_preds):
+
+            preds = np.median(np.array(epoch_preds), axis=0)
+
+            results['smape'][family.name + '__epoch_' + str(i) + '__ens'] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
+            results['mase*'][family.name + '__epoch_' + str(i) + '__ens'] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
+
+    return results
+
+
 def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None):
 
     if not result_dict:
@@ -37,7 +91,7 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None):
         results = result_dict.copy()
 
     family = Path(family)
-    trials = list(Path(family.parent).glob(family.name + '*'))  # list for tqdm
+    trials = list(family.parent.glob(family.name + '*'))  # list for tqdm
 
     family_preds = []
     num = 0
@@ -65,18 +119,23 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None):
     return results
 
 
-def evaluate_snapshot_ensembles(families, x, y):
+def evaluate_multiple_families(families, x, y, snapshot=False):
     results = {'smape': {}, 'mase*': {}}
 
-    if len(families) > 1:
+    family_eval_fcn = evaluate_snapshot_ensemble if snapshot else evaluate_family_with_multiple_weights
+
+    if len(families) > 1 and not isinstance(families, str):
         num_digits = str(len(str(len(families))))
         template = 'family {:>' + num_digits + '} of {:<' + num_digits + '}'
     else:
         template = ''
+        families = [families]
 
     for i, family in enumerate(families):
-        results = evaluate_snapshot_ensemble(family, x, y, results, desc=template.format(i+1, len(families)))
-        with open('/tmp/{}.pkl'.format(family.name), 'wb') as f:
+
+        results = family_eval_fcn(family, x, y, results, desc=template.format(i+1, len(families)))
+
+        with open('/tmp/{}.pkl'.format(Path(family).name), 'wb') as f:
             pkl.dump(results, f)
 
     return results
@@ -125,7 +184,32 @@ def find_untracked_trials(result_dir, tracked=None, exclude_pattern=None, verbos
     return untracked, undertracked, redundant
 
 
-def create_results_df(results, columns):
+def create_results_df_multi_weights(results, columns):
+
+    single_keys = [k for k in results['smape'].keys() if 'ens' not in k]
+    df1 = pd.DataFrame([k.split('__') for k in single_keys], columns=columns + ['num', 'epoch'])
+    df1['ensemble'] = False
+    df1['smape'] = [results['smape'][k] if results['smape'][k] else np.nan for k in single_keys]
+    df1['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in single_keys]
+
+    ens_keys = [k for k in results['smape'].keys() if 'ens' in k]
+    df2 = pd.DataFrame([k.replace('__ens', '').split('__') for k in ens_keys], columns=columns + ['num'])
+    df2['ensemble'] = True
+    df2['smape'] = [results['smape'][k] if results['smape'][k] else np.nan for k in ens_keys]
+    df2['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in ens_keys]
+
+    df = pd.concat([df1, df2])
+
+    for column in columns:
+        try:
+            df[column] = df[column].apply(lambda x: x.split('_')[1])
+        except IndexError:
+            raise IndexError('Trying to split column {}'.format(column))
+
+    return df
+
+
+def create_results_df_snapshot(results, columns):
 
     single_keys = [k for k in results['smape'].keys() if 'ens' not in k]
     df1 = pd.DataFrame([k.split('__') for k in single_keys], columns=columns + ['num'])
@@ -150,7 +234,8 @@ def create_results_df(results, columns):
     return df
 
 
-def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return_results=False, debug=False):
+def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return_results=False,
+                   snapshot=False, debug=False):
 
     tracked_file = (Path(report_dir) / 'tracked.pkl')
     if tracked_file.exists():
@@ -180,7 +265,10 @@ def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return
                 print('{:>2}. {}'.format(i+1, t))
 
     else:
-        results = evaluate_snapshot_ensembles(families, X_test, y_test)
+        if snapshot:
+            results = evaluate_snapshot_ensembles(families, X_test, y_test)
+        else:
+            results = evaluate_models_multiple_weights()
         
         if return_results:
             return results, tracked

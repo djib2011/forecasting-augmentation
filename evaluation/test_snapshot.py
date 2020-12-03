@@ -29,9 +29,9 @@ if __name__ == '__main__':
 
     X_test, y_test = datasets.load_test_set()
 
-    results_with = evaluation.evaluate_snapshot_ensemble(result_dir + 'with_shapshot', X_test, y_test)
-    df_with = create_results_df(results_with)
-
-    results_without = evaluation.evaluate_snapshot_ensemble(result_dir + 'no_shapshot', X_test, y_test)
+    results_without = evaluation.evaluate_multiple_families(result_dir + 'no_snapshot', X_test, y_test, snapshot=False)
     df_without = create_results_df(results_without)
+
+    results_with = evaluation.evaluate_multiple_families(result_dir + 'with_snapshot', X_test, y_test, snapshot=True)
+    df_with = create_results_df(results_with)
 
