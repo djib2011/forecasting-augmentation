@@ -63,13 +63,13 @@ def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=N
 
             tf.keras.backend.clear_session()
 
-            results['smape'][trial.name + '__epoch_' + str(epoch_ind + 1)] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
-            results['mase*'][trial.name + '__epoch_' + str(epoch_ind + 1)] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
+            results['smape'][trial.name + '__epoch_{}'.format(epoch_ind + 1)] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
+            results['mase*'][trial.name + '__epoch_{}'.format(epoch_ind + 1)] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
 
             ensemble_preds = np.median(np.array(all_model_preds_in_trial), axis=0)
 
-            results['smape'][trial.name + '__ens'] = np.nanmean(metrics.SMAPE(y, ensemble_preds[:, -6:]))
-            results['mase*'][trial.name + '__ens'] = np.nanmean(metrics.MASE(x, y, ensemble_preds[:, -6:]))
+            results['smape']['ens__' + trial.name + '__epoch_{}'.format(epoch_ind + 1)] = np.nanmean(metrics.SMAPE(y, ensemble_preds[:, -6:]))
+            results['mase*']['ens__' + trial.name + '__epoch_{}'.format(epoch_ind + 1)] = np.nanmean(metrics.MASE(x, y, ensemble_preds[:, -6:]))
 
         trial_ind += 1
 
@@ -77,8 +77,8 @@ def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=N
 
             preds = np.median(np.array(epoch_preds), axis=0)
 
-            results['smape'][family.name + '__epoch_' + str(i) + '__ens'] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
-            results['mase*'][family.name + '__epoch_' + str(i) + '__ens'] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
+            results['smape']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
+            results['mase*']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
 
     return results
 
@@ -186,21 +186,15 @@ def find_untracked_trials(result_dir, tracked=None, exclude_pattern=None, verbos
 
 def create_results_df_multi_weights(results, columns):
 
-    single_keys = [k for k in results['smape'].keys() if 'ens' not in k]
-    df1 = pd.DataFrame([k.split('__') for k in single_keys], columns=columns + ['num', 'epoch'])
-    df1['ensemble'] = False
-    df1['smape'] = [results['smape'][k] if results['smape'][k] else np.nan for k in single_keys]
-    df1['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in single_keys]
+    keys_original = [k for k in results['smape'].keys()]
+    keys = [k.replace('ens__', '') for k in keys_original]
+    df = pd.DataFrame([k.split('__') for k in keys], columns=columns + ['num', 'epoch'])
 
-    ens_keys = [k for k in results['smape'].keys() if 'ens' in k]
-    df2 = pd.DataFrame([k.replace('__ens', '').split('__') for k in ens_keys], columns=columns + ['num'])
-    df2['ensemble'] = True
-    df2['smape'] = [results['smape'][k] if results['smape'][k] else np.nan for k in ens_keys]
-    df2['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in ens_keys]
+    df['ensemble'] = ['ens__' in k for k in keys_original]
+    df['smape'] = [results['smape'][k] if results['smape'][k] else np.nan for k in single_keys]
+    df['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in single_keys]
 
-    df = pd.concat([df1, df2])
-
-    for column in columns:
+    for column in columns + ['epoch']:
         try:
             df[column] = df[column].apply(lambda x: x.split('_')[1])
         except IndexError:
@@ -270,12 +264,14 @@ def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return
         if return_results:
             return results, tracked
 
+        results_df_fcn = create_results_df_snapshot if snapshot else create_results_df_multi_weights
+
         result_df_file = (Path(report_dir) / 'results.csv')
         if result_df_file.exists():
             df = pd.read_csv(result_df_file)
-            df = pd.concat([df, create_results_df(results, columns=columns)])
+            df = pd.concat([df, results_df_fcn(results, columns=columns)])
         else:
-            df = create_results_df(results, columns=columns)
+            df = results_df_fcn(results, columns=columns)
         
         # TODO: make dir if it doesn't exist
         df.to_csv(result_df_file, index=False)
