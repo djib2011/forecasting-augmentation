@@ -29,7 +29,7 @@ def get_predictions(model, X, batch_size=256):
     return np.vstack(preds)
 
 
-def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=None):
+def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=None, verbose=False):
 
     if not result_dict:
         results = {'smape': {}, 'mase*': {}}
@@ -41,6 +41,13 @@ def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=N
 
     family_preds = None
     trial_ind = 0
+
+    if verbose:
+        print('Run name:', family.name)
+        print('Family path:', str(family))
+        print('Trials identified:', len(trials))
+        for i, t in enumerate(trials):
+            print('  {:>2d}. {}'.format(i, t))
 
     for trial in tqdm(trials, desc=desc):
 
@@ -191,8 +198,8 @@ def create_results_df_multi_weights(results, columns):
     df = pd.DataFrame([k.split('__') for k in keys], columns=columns + ['num', 'epoch'])
 
     df['ensemble'] = ['ens__' in k for k in keys_original]
-    df['smape'] = [results['smape'][k] if results['smape'][k] else np.nan for k in single_keys]
-    df['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in single_keys]
+    df['smape'] = [results['smape'][k] if results['smape'][k] else np.nan for k in keys]
+    df['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in keys]
 
     for column in columns + ['epoch']:
         try:

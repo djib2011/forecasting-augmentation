@@ -8,6 +8,7 @@ import sys
 sys.path.append('.')
 
 import evaluation
+import datasets
 
 
 def create_results_df(results):
@@ -48,16 +49,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    result_dir = 'results/comb_nw/'
+    result_dir = 'results/benchmark/'
     report_dir = 'reports/benchmark/'
 
     columns = ['input_len']
 
-    results, tracked = evaluation.run_evaluation(result_dir=result_dir, report_dir=report_dir, columns=columns, exclude_pattern='comb',
-                                                 return_results=True, debug=args.debug)
-
-    df = create_results_df(results)
+    X_test, y_test = datasets.load_test_set()
+    results = evaluation.evaluate_family_with_multiple_weights(result_dir + 'inp_18_nw', X_test, y_test, verbose=True)
+    df = evaluation.evaluate_family_with_multiple_weights(results, columns=columns)
     df.to_csv(report_dir + 'results.csv', index=False)
-
-    with open(report_dir + 'trached.pkl', 'wb') as f:
-        pkl.dump(tracked, f)
