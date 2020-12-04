@@ -4,8 +4,8 @@ import tensorflow as tf
 def unidirectional_2_layer(hparams):
     s = hparams['base_layer_size']
     inp = tf.keras.layers.Input(shape=(hparams['input_seq_length'], 1))
-    x = tf.keras.layers.LSTM(s, return_sequences=True, activation='relu')(inp)
-    x = tf.keras.layers.LSTM(s * 2, return_sequences=True, activation='relu')(x)
+    x = tf.keras.layers.LSTM(s, return_sequences=True)(inp)
+    x = tf.keras.layers.LSTM(s * 2, return_sequences=True)(x)
     x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dense(hparams['output_seq_length'] * s * 2)(x)
     x = tf.keras.layers.Reshape((hparams['output_seq_length'], s * 2))(x)
@@ -18,9 +18,9 @@ def unidirectional_2_layer(hparams):
 def unidirectional_3_layer(hparams):
     s = hparams['base_layer_size']
     inp = tf.keras.layers.Input(shape=(hparams['input_seq_length'], 1))
-    x = tf.keras.layers.LSTM(s, return_sequences=True, activation='relu')(inp)
-    x = tf.keras.layers.LSTM(s * 2, return_sequences=True, activation='relu')(x)
-    x = tf.keras.layers.LSTM(s * 4, return_sequences=True, activation='relu')(x)
+    x = tf.keras.layers.LSTM(s, return_sequences=True)(inp)
+    x = tf.keras.layers.LSTM(s * 2, return_sequences=True)(x)
+    x = tf.keras.layers.LSTM(s * 4, return_sequences=True)(x)
     x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dense(hparams['output_seq_length'] * s * 2)(x)
     x = tf.keras.layers.Reshape((hparams['output_seq_length'], s * 2))(x)
@@ -33,10 +33,10 @@ def unidirectional_3_layer(hparams):
 def unidirectional_4_layer(hparams):
     s = hparams['base_layer_size']
     inp = tf.keras.layers.Input(shape=(hparams['input_seq_length'], 1))
-    x = tf.keras.layers.LSTM(s, return_sequences=True, activation='relu')(inp)
-    x = tf.keras.layers.LSTM(s * 2, return_sequences=True, activation='relu')(x)
-    x = tf.keras.layers.LSTM(s * 4, return_sequences=True, activation='relu')(x)
-    x = tf.keras.layers.LSTM(s * 8, return_sequences=True, activation='relu')(x)
+    x = tf.keras.layers.LSTM(s, return_sequences=True)(inp)
+    x = tf.keras.layers.LSTM(s * 2, return_sequences=True)(x)
+    x = tf.keras.layers.LSTM(s * 4, return_sequences=True)(x)
+    x = tf.keras.layers.LSTM(s * 8, return_sequences=True)(x)
     x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dense(hparams['output_seq_length'] * s * 2)(x)
     x = tf.keras.layers.Reshape((hparams['output_seq_length'], s * 2))(x)
@@ -49,8 +49,8 @@ def unidirectional_4_layer(hparams):
 def bidirectional_2_layer(hparams):
     s = hparams['base_layer_size']
     inp = tf.keras.layers.Input(shape=(hparams['input_seq_length'], 1))
-    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s, return_sequences=True, activation='relu'))(inp)
-    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 2, return_sequences=True, activation='relu'))(x)
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s, return_sequences=True))(inp)
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 2, return_sequences=True))(x)
     x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dense(hparams['output_seq_length'] * s * 2)(x)
     x = tf.keras.layers.Reshape((hparams['output_seq_length'], s * 2))(x)
@@ -63,9 +63,9 @@ def bidirectional_2_layer(hparams):
 def bidirectional_3_layer(hparams):
     s = hparams['base_layer_size']
     inp = tf.keras.layers.Input(shape=(hparams['input_seq_length'], 1))
-    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s, return_sequences=True, activation='relu'))(inp)
-    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 2, return_sequences=True, activation='relu'))(x)
-    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 4, return_sequences=True, activation='relu'))(x)
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s, return_sequences=True))(inp)
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 2, return_sequences=True))(x)
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 4, return_sequences=True))(x)
     x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dense(hparams['output_seq_length'] * s * 2)(x)
     x = tf.keras.layers.Reshape((hparams['output_seq_length'], s * 2))(x)
@@ -78,10 +78,10 @@ def bidirectional_3_layer(hparams):
 def bidirectional_4_layer(hparams):
     s = hparams['base_layer_size']
     inp = tf.keras.layers.Input(shape=(hparams['input_seq_length'], 1))
-    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s, return_sequences=True, activation='relu'))(inp)
-    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 2, return_sequences=True, activation='relu'))(x)
-    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 4, return_sequences=True, activation='relu'))(x)
-    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 8, return_sequences=True, activation='relu'))(x)
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s, return_sequences=True))(inp)
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 2, return_sequences=True))(x)
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 4, return_sequences=True))(x)
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(s * 8, return_sequences=True))(x)
     x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dense(hparams['output_seq_length'] * s * 2)(x)
     x = tf.keras.layers.Reshape((hparams['output_seq_length'], s * 2))(x)
