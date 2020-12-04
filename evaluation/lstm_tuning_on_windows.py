@@ -20,4 +20,4 @@ if __name__ == '__main__':
 
     columns = ['input_len', 'direction', 'size', 'depth']
 
-    evaluation.run_evaluation(result_dir=result_dir, report_dir=report_dir, columns=columns, debug=args.debug)
+    evaluation.run_evaluation(result_dir=result_dir, report_dir=report_dir, columns=columns, debug=args.debug, snapshot=False)
