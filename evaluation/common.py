@@ -198,8 +198,8 @@ def create_results_df_multi_weights(results, columns):
     df = pd.DataFrame([k.split('__') for k in keys], columns=columns + ['num', 'epoch'])
 
     df['ensemble'] = ['ens__' in k for k in keys_original]
-    df['smape'] = [results['smape'][k] if results['smape'][k] else np.nan for k in keys]
-    df['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in keys]
+    df['smape'] = [results['smape'][k] if results['smape'][k] else np.nan for k in keys_original]
+    df['mase*'] = [results['mase*'][k] if results['mase*'][k] else np.nan for k in keys_original]
 
     for column in columns + ['epoch']:
         try:
