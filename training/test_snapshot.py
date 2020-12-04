@@ -34,12 +34,9 @@ hp = {'base_layer_size': 32,
 model_gen = models.get(family='sequential', type=hp['direction'], depth=hp['depth'])
 
 # First run with snapshot ensemble
-# model = model_gen(hp)
-# run_name = 'test_snapshot/with_snapshot'
-# training.run_training(model, data, run_name, num_runs=5, debug=args.debug, snapshot=True)
-# del model
+run_name = 'test_snapshot/with_snapshot'
+training.run_training(model_gen, hp, data, run_name, num_runs=5, debug=args.debug, snapshot=True)
 
 # Run without snapshot ensemble
-model = model_gen(hp)
 run_name = 'test_snapshot/no_snapshot'
-training.run_training(model, data, run_name, num_runs=10, debug=args.debug, epochs=20, snapshot=False)
+training.run_training(model_gen, hp, data, run_name, num_runs=10, debug=args.debug, epochs=20, snapshot=False)
