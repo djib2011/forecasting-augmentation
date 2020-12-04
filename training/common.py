@@ -24,7 +24,7 @@ def train_model_single(model, train_set, run_name, run_num, epochs=15, batch_siz
     steps_per_epoch = len(train_set)//batch_size+1
     result_file = 'results/{}__{}/'.format(run_name, run_num) + 'weights_epoch_{epoch:02d}.h5'
 
-    callbacks = [utils.callbacks.SimpleModelCheckpoint(result_file, True)]
+    callbacks = [utils.callbacks.SimpleModelCheckpoint(result_file)]
 
     model.fit(train_set, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks)
 
@@ -36,7 +36,7 @@ def run_training(model_gen, hparams, data, run_name, num_runs=5, debug=False, sn
     single_model_training_fcn = train_model_snapshot if snapshot else train_model_single
 
     if debug:
-        print('Will use {} single model training function.'.format(single_model_training_fcn))
+        print('Will use {} single-model training function.'.format(single_model_training_fcn.__name__))
         for x, y in data:
             print('Batch shapes:', x.shape, y.shape)
             model = model_gen(hparams)
