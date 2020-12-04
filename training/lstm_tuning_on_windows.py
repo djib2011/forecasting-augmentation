@@ -43,7 +43,6 @@ hp_generator = training.make_runs(hp_comb_dict)
 for hp in hp_generator:
 
     model_gen = models.get(family='sequential', type=hp['direction'], depth=hp['depth'])
-    model = model_gen(hp)
     run_name = 'lstm_tuning_windows/inp_{}__dir_{}__size_{}__depth_{}'.format(hp['input_seq_length'],
                                                                               hp['direction'],
                                                                               hp['base_layer_size'],
@@ -51,5 +50,5 @@ for hp in hp_generator:
     if args.debug:
         print('run name:', run_name)
 
-    training.run_training(model, data, run_name, num_runs=num_runs, debug=args.debug,
+    training.run_training(model_gen, hp, data, run_name, num_runs=num_runs, debug=args.debug,
                           batch_size=batch_size, epochs=epochs, snapshot=snapshot)
