@@ -56,5 +56,5 @@ if __name__ == '__main__':
 
     X_test, y_test = datasets.load_test_set()
     results = evaluation.evaluate_family_with_multiple_weights(result_dir + 'inp_18_nw', X_test, y_test, verbose=True)
-    df = evaluation.evaluate_family_with_multiple_weights(results, columns=columns)
+    df = evaluation.create_results_df_multi_weights(results, columns=columns)
     df.to_csv(report_dir + 'results.csv', index=False)

@@ -280,7 +280,9 @@ def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return
         else:
             df = results_df_fcn(results, columns=columns)
         
-        # TODO: make dir if it doesn't exist
+        if not result_df_file.parent.is_dir():
+            os.makedirs(report_dir)
+
         df.to_csv(result_df_file, index=False)
 
         with open(tracked_file, 'wb') as f:
