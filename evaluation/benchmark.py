@@ -4,6 +4,7 @@ import pickle as pkl
 import argparse
 from pathlib import Path
 import sys
+import os
 
 sys.path.append('.')
 
@@ -49,12 +50,15 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    result_dir = 'results/benchmark/'
-    report_dir = 'reports/benchmark/'
+    result_dir = 'results/OLD_benchmark/'
+    report_dir = 'reports/OLD_benchmark/'
 
     columns = ['input_len']
 
     X_test, y_test = datasets.load_test_set()
     results = evaluation.evaluate_family_with_multiple_weights(result_dir + 'inp_18_nw', X_test, y_test, verbose=True)
     df = evaluation.create_results_df_multi_weights(results, columns=columns)
+
+    if not os.path.isdir(report_dir):
+        os.makedirs(report_dir)
     df.to_csv(report_dir + 'results.csv', index=False)
