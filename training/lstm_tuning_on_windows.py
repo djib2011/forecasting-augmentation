@@ -14,10 +14,12 @@ import argparse
 import training
 
 # Global configs
-num_runs = 10
+num_runs = 1
 batch_size = 2048
-epochs = 10
+epochs = 101
 snapshot = False
+warmup = 10
+patience = 3
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
@@ -50,5 +52,5 @@ for hp in hp_generator:
     if args.debug:
         print('run name:', run_name)
 
-    training.run_training(model_gen, hp, data, run_name, num_runs=num_runs, debug=args.debug,
-                          batch_size=batch_size, epochs=epochs, snapshot=snapshot)
+    training.run_training(model_gen, hp, data, run_name, num_runs=num_runs, debug=args.debug, batch_size=batch_size,
+                          epochs=epochs, snapshot=snapshot, warmup=warmup, patience=patience)

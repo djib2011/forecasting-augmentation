@@ -12,7 +12,7 @@ class SimpleModelCheckpoint(tf.keras.callbacks.Callback):
         self.verbose = verbose
         self.patience = patience
         self.warmup = warmup
-        
+
     def on_epoch_end(self, epoch, logs=None):
 
         if epoch == self.warmup or (epoch > self.warmup and epoch % self.patience == 0):
