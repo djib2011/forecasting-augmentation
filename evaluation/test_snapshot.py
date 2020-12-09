@@ -1,4 +1,5 @@
 import sys
+import pandas as pd
 
 sys.path.append('.')
 
@@ -29,10 +30,13 @@ if __name__ == '__main__':
 
     X_test, y_test = datasets.load_test_set()
 
-    #results_without = evaluation.evaluate_multiple_families(result_dir + 'no_snapshot', X_test, y_test, snapshot=False)
-    #df_without = create_results_df_multi_weights(results_without, columns=['snapshot'])
-    #df_without['snapshot'] = False
+    results_without = evaluation.evaluate_multiple_families(result_dir + 'no_snapshot', X_test, y_test, snapshot=False)
+    df_without = evaluation.create_results_df_multi_weights(results_without, columns=['snapshot'])
+    df_without['snapshot'] = False
 
     results_with = evaluation.evaluate_multiple_families(result_dir + 'with_snapshot', X_test, y_test, snapshot=True)
     df_with = create_results_df_snap(results_with)
+    df_with['snapshot'] = True
 
+    df = pd.concat([df_without, df_with])
+    df.to_csv(report_dir + 'results.csv', index=False)
