@@ -47,5 +47,5 @@ run_name = 'test_manual_snapshot/inp_{}__dir_{}__size_{}__depth_{}'.format(hpara
                                                                            hparams['base_layer_size'],
                                                                            hparams['depth'])
 
-training.run_training(model_gen, hp, data, run_name, num_runs=num_runs, debug=args.debug, batch_size=batch_size,
+training.run_training(model_gen, hparams, data, run_name, num_runs=num_runs, debug=args.debug, batch_size=batch_size,
                       epochs=epochs, snapshot=snapshot, warmup=warmup, patience=patience)

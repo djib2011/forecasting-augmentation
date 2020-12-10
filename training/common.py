@@ -22,7 +22,7 @@ def train_model_snapshot(model, train_set, run_name, run_num, cycles=15, batch_s
 def train_model_single(model, train_set, run_name, run_num, epochs=15, batch_size=256, **kwargs):
 
     steps_per_epoch = len(train_set)//batch_size+1
-    result_file = 'results/{}__{}/'.format(run_name, run_num) + 'weights_epoch_{epoch:02d}.h5'
+    result_file = 'results/{}__{}/'.format(run_name, run_num) + 'weights_epoch_{epoch:03d}.h5'  # TODO: dynamic :03d
 
     callbacks = [utils.callbacks.SimpleModelCheckpoint(result_file, **kwargs)]
 
