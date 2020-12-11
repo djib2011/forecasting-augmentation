@@ -1,10 +1,15 @@
 from pathlib import Path
 import os
 import sys
+from tqdm import tqdm
+import tensorflow as tf
+import numpy as np
+import pandas as pd
 
 sys.path.append('.')
 
 import evaluation
+import datasets
 
 if __name__ == '__main__':
 
@@ -20,6 +25,8 @@ if __name__ == '__main__':
     result_dir = 'results/test_manual_snapshot/'
     preds_dir = 'predictions/test_manual_snapshot/'
 
+    X_test, y_test = datasets.load_test_set()
+
     if not os.path.isdir(preds_dir):
         os.makedirs(preds_dir)
 
@@ -29,7 +36,7 @@ if __name__ == '__main__':
 
     for trial in trials:
 
-        models = trial.glob('*.h5')
+        models = list(trial.glob('*.h5'))
 
         all_preds = []
         trial_ind = 0
@@ -38,11 +45,14 @@ if __name__ == '__main__':
 
             model = tf.keras.models.load_model(single_model)
 
-            preds = evaluation.get_predictions(model, x)
+            preds = evaluation.get_predictions(model, X_test)
 
             all_preds.append(preds)
+            np.save('/tmp/' + str(single_model) + '_preds.npy', preds)
             
+            del model 
+            tf.keras.backend.clear_session()
+ 
         pd.DataFrame(np.array(all_preds)).to_csv(preds_dir + r + '.csv')
-
 
 
