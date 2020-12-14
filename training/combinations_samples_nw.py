@@ -39,8 +39,8 @@ else:
 
 data = datasets.seq2seq_generator(data_path, batch_size=batch_size)
 
-hp = {'base_layer_size': 16, 'input_seq_length': args.input_len, 'output_seq_length': 6}
-model = models.sequential.bidirectional_3_layer(hp)
+hp = {'base_layer_size': 256, 'input_seq_length': args.input_len, 'output_seq_length': 6}
+model = models.sequential.bidirectional_2_layer(hp)
 
 for i in range(10):
     if args.debug:
