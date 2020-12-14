@@ -132,15 +132,15 @@ def evaluate_multiple_families(families, x, y, snapshot=False):
 
     family_eval_fcn = evaluate_snapshot_ensemble if snapshot else evaluate_family_with_multiple_weights
 
-    if len(families) > 1 and not isinstance(families, str):
-        num_digits = str(len(str(len(families))))
-        template = 'family {:>' + num_digits + '} of {:<' + num_digits + '}'
-    else:
-        template = ''
+    template = ''
+    if isinstance(families, str):
         families = [families]
+    else:
+        if len(families) > 1:
+            num_digits = str(len(str(len(families))))
+            template = 'family {:>' + num_digits + '} of {:<' + num_digits + '}'
 
     for i, family in enumerate(families):
-
         results = family_eval_fcn(family, x, y, results, desc=template.format(i+1, len(families)))
 
         with open('/tmp/{}.pkl'.format(Path(family).name), 'wb') as f:
