@@ -42,12 +42,11 @@ def run_training(model_gen, hparams, data, run_name, num_runs=5, debug=False, sn
             model.train_on_batch(x, y)
             break
     else:
-        model = model_gen(hparams)
         for i in range(num_runs):
-            # model = model_gen(hparams)
+            model = model_gen(hparams)
             _ = single_model_training_fcn(model, data, run_name, run_num=i, **kwargs)
-            # del model
-            # tf.keras.backend.clear_session()
+            del model
+            tf.keras.backend.clear_session()
 
 
 def make_runs(hparam_combinations_dict):

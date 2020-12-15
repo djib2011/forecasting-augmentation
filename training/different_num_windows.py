@@ -14,8 +14,13 @@ import argparse
 import training
 
 
+# Global configs
+num_runs = 4
 batch_size = 2048
 epochs = 15
+snapshot = False
+warmup = 0
+patience = 1
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
@@ -37,4 +42,5 @@ model_gen = models.sequential.bidirectional_2_layer
 
 # model_gen, hparams = models.get_optimal_setup()
 
-training.run_training(model_gen, hp, data, run_name, num_runs=10, debug=args.debug, snapshot=False)
+training.run_training(model_gen, hp, data, run_name, num_runs=num_runs, debug=args.debug, batch_size=batch_size,
+                      epochs=epochs, snapshot=snapshot, warmup=warmup, patience=patience)
