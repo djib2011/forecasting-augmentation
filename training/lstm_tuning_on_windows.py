@@ -16,7 +16,7 @@ import training
 # Global configs
 num_runs = 10
 batch_size = 1024
-epochs = 10 # 101
+epochs = 15 # 101
 snapshot = False
 warmup = 0 # 10
 patience = 1 # 3
@@ -34,9 +34,9 @@ data_path = 'data/yearly_{}.h5'.format(args.input_len + 6)
 
 data = datasets.seq2seq_generator(data_path, batch_size=1024)
 
-hp_comb_dict = {'base_layer_size': [256],
+hp_comb_dict = {'base_layer_size': [128, 256],
                 'direction': ['bi'],
-                'depth': [4],
+                'depth': [2, 3],
                 'input_seq_length': [18],
                 'output_seq_length': [6]}
 

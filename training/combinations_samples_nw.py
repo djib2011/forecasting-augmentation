@@ -14,8 +14,14 @@ import argparse
 import training
 
 
+# Global variables
+num_runs = 10
 batch_size = 2048
 epochs = 15
+snapshot = False
+warmup = 0
+patience = 1
+
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
@@ -40,13 +46,11 @@ else:
 data = datasets.seq2seq_generator(data_path, batch_size=batch_size)
 
 hp = {'base_layer_size': 256, 'input_seq_length': args.input_len, 'output_seq_length': 6}
-model = models.sequential.bidirectional_2_layer(hp)
 
-for i in range(10):
-    if args.debug:
-        for x, y in data:
-            print('Batch shapes:', x.shape, y.shape)
-            model.train_on_batch(x, y)
-            break
-    else:
-        _ = training.train_model_single(model, data, run_name, run_num=i, epochs=epochs, batch_size=batch_size)
+model_gen = models.sequential.bidirectional_2_layer
+
+# model_gen, hparams = models.get_optimal_setup()
+
+training.run_training(model_gen, hp, data, run_name, num_runs=num_runs, debug=args.debug, batch_size=batch_size,
+                      epochs=epochs, snapshot=snapshot, warmup=warmup, patience=patience)
+
