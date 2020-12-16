@@ -50,6 +50,8 @@ def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=N
         for i, t in enumerate(trials):
             print('  {:>2d}. {}'.format(i, t))
 
+    ensemble_preds_all_trials = []
+
     for trial in tqdm(trials, desc=desc):
 
         all_model_preds_in_trial = []
@@ -81,12 +83,19 @@ def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=N
 
         trial_ind += 1
 
-        for i, epoch_preds in enumerate(family_preds):
+        ensemble_preds_all_trials.append(ensemble_preds)
 
-            preds = np.median(np.array(epoch_preds), axis=0)
+    for i, epoch_preds in enumerate(family_preds):
 
-            results['smape']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
-            results['mase*']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
+        preds = np.median(np.array(epoch_preds), axis=0)
+
+        results['smape']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
+        results['mase*']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
+
+    final_preds = np.median(np.array(ensemble_preds_all_trials), axis=0)
+
+    results['smape']['ens__' + family.name + '____epoch_'] = np.nanmean(metrics.SMAPE(y, final_preds[:, -6:]))
+    results['mase*']['ens__' + family.name + '____epoch_'] = np.nanmean(metrics.MASE(x, y, final_preds[:, -6:]))
 
     return results
 

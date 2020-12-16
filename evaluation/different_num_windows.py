@@ -21,4 +21,4 @@ if __name__ == '__main__':
     columns = ['input_len', 'num_samples']
 
     evaluation.run_evaluation(result_dir=result_dir, report_dir=report_dir, columns=columns, debug=args.debug,
-                              snapshot=False, exclude_pattern='113k')
+                              snapshot=False)
