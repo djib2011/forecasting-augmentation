@@ -6,7 +6,7 @@ import tensorflow as tf
 
 class SimpleModelCheckpoint(tf.keras.callbacks.Callback):
 
-    def __init__(self, result_file, warmup=0, patience=1, verbose=False):
+    def __init__(self, result_file, warmup=0, patience=1, verbose=False, **kwargs):
         super().__init__()
         self.result_file = result_file
         self.verbose = verbose

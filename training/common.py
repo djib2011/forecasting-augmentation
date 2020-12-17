@@ -19,19 +19,25 @@ def train_model_snapshot(model, train_set, run_name, run_num, cycles=15, batch_s
     return model
 
 
-def train_model_single(model, train_set, run_name, run_num, epochs=15, batch_size=256, **kwargs):
+def train_model_single(model, train_set, run_name, run_num, epochs=15, batch_size=256, exp_decay=False, **kwargs):
 
-    steps_per_epoch = len(train_set)//batch_size+1
+    steps_per_epoch = len(train_set) // batch_size + 1
     result_file = 'results/{}__{}/'.format(run_name, run_num) + 'weights_epoch_{epoch:03d}.h5'  # TODO: dynamic :03d
 
     callbacks = [utils.callbacks.SimpleModelCheckpoint(result_file, **kwargs)]
+
+    if exp_decay:
+        def scheduler(epoch, lr):
+            return lr * tf.math.exp(-0.1)
+
+        callbacks += [tf.keras.callbacks.LearningRateScheduler(schedule=scheduler)]
 
     model.fit(train_set, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks)
 
     return model
 
 
-def run_training(model_gen, hparams, data, run_name, num_runs=5, debug=False, snapshot=False, **kwargs):
+def run_training(model_gen, hparams, data, run_name, num_runs=5, debug=False, snapshot=False, exp_decay=False, **kwargs):
 
     single_model_training_fcn = train_model_snapshot if snapshot else train_model_single
 
@@ -44,7 +50,7 @@ def run_training(model_gen, hparams, data, run_name, num_runs=5, debug=False, sn
     else:
         for i in range(num_runs):
             model = model_gen(hparams)
-            _ = single_model_training_fcn(model, data, run_name, run_num=i, **kwargs)
+            _ = single_model_training_fcn(model, data, run_name, run_num=i, exp_decay=exp_decay, **kwargs)
             del model
             tf.keras.backend.clear_session()
 
