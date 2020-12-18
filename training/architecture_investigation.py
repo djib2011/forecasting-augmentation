@@ -36,10 +36,10 @@ data = datasets.seq2seq_generator(data_path, batch_size=1024)
 
 hp_comb_dict = {'base_layer_size': [128, 256],
                 'direction': ['bi'],
-                'depth': [2],
+                'depth': [3],
                 'input_seq_length': [18],
                 'output_seq_length': [6],
-                'property': ['small_dense', 'dropout', 'batchnorm', 'layernorm']}
+                'property': ['small_dense', 'layernorm']}
 
 hp_generator = training.make_runs(hp_comb_dict)
 
@@ -48,8 +48,7 @@ for hp in hp_generator:
     model_gen = models.get_experimental(family='sequential', type=hp['direction'],
                                         depth=hp['depth'], property=hp['property'])
 
-    run_name = 'architectures/dir_{}__size_{}__depth_{}__property_{}'.format(hp['input_seq_length'],
-                                                                             hp['direction'],
+    run_name = 'architectures/dir_{}__size_{}__depth_{}__property_{}'.format(hp['direction'],
                                                                              hp['base_layer_size'],
                                                                              hp['depth'],
                                                                              hp['property'])
