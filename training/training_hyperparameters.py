@@ -35,9 +35,9 @@ data_path = 'data/yearly_{}.h5'.format(18 + 6)
 data = datasets.seq2seq_generator(data_path, batch_size=batch_size)
 
 adam_comb_dict = {'optimizer': ['adam'],
-                  'learning_rate': [0.0001, 0.0005, 0.001, 0.005],
-                  'amsgrad': [True, False],
-                  'exp_decay': [True, False],
+                  'learning_rate': [0.01, 0.02, 0.05],
+                  'exp_decay': [True],
+                  'amsgrad': [False],
                   'direction': ['bi'],
                   'base_layer_size': [128],
                   'depth': [2],
@@ -59,7 +59,7 @@ for hp in hp_generator:
         print('run name:', run_name)
         model = model_gen(hp)
         opt = utils.optimizers.build_optimizer(hp['optimizer'], learning_rate=hp['learning_rate'],
-                                                   amsgrad=hp['amsgrad'])
+                                               amsgrad=hp['amsgrad'])
         model.compile(loss='mae', optimizer=opt, metrics=['mae', 'mse'])
         for x, y in data:
             model.train_on_batch(x, y)
@@ -70,6 +70,7 @@ for hp in hp_generator:
             model = model_gen(hp)
             opt = utils.optimizers.build_optimizer(hp['optimizer'], learning_rate=hp['learning_rate'],
                                                    amsgrad=hp['amsgrad'])
+
             model.compile(loss='mae', optimizer=opt, metrics=['mae', 'mse'])
 
             model = training.train_model_single(model, data, run_name, run_num=i, exp_decay=hp['exp_decay'],
