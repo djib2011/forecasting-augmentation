@@ -48,10 +48,10 @@ for hp in hp_generator:
     model_gen = models.get_experimental(family='sequential', type=hp['direction'],
                                         depth=hp['depth'], property=hp['property'])
 
-    run_name = 'architectures/dir_{}__size_{}__depth_{}__property_{}'.format(hp['direction'],
-                                                                             hp['base_layer_size'],
-                                                                             hp['depth'],
-                                                                             hp['property'])
+    run_name = 'architecture_investigation/dir_{}__size_{}__depth_{}__property_{}'.format(hp['direction'],
+                                                                                          hp['base_layer_size'],
+                                                                                          hp['depth'],
+                                                                                          hp['property'])
     if args.debug:
         print('run name:', run_name)
 
