@@ -7,7 +7,7 @@ import tensorflow as tf
 import warnings
 import pickle as pkl
 
-from utils import metrics
+from utils import metrics, deprecated
 import datasets
 
 
@@ -31,6 +31,78 @@ def get_predictions(model, X, batch_size=256):
 
 
 def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=None, verbose=False):
+
+    if not result_dict:
+        results = {'smape': {}, 'mase*': {}}
+    else:
+        results = result_dict.copy()
+
+    family = Path(family)
+    trials = sorted(family.parent.glob(family.name + '*'), key=lambda x: int(x.name.split('__')[-1]))
+
+    if verbose:
+        print('Run name:', family.name)
+        print('Family path:', str(family))
+        print('Trials identified:', len(trials))
+        for i, t in enumerate(trials):
+            print('  {:>2d}. {}'.format(i, t))
+
+    family_preds = None
+    ensemble_preds_all_trials = []
+
+    for trial in tqdm(trials, desc=desc):
+
+        all_models_in_trial = sorted(trial.glob('*'), key=lambda x: x.name.split('/')[-1])
+
+        if not family_preds:
+            family_preds = [[] for _ in range(len(all_models_in_trial))]
+
+        all_model_preds_in_trial = []
+
+        for epoch_ind, single_model in enumerate(all_models_in_trial):
+
+            model = tf.keras.models.load_model(single_model)
+
+            preds = evaluation.get_predictions(model, x)
+
+            family_preds[epoch_ind].append(preds)
+
+            results['smape'][trial.name + '__epoch_{}'.format(epoch_ind + 1)] = np.nanmean(
+                metrics.SMAPE(y, preds[:, -6:]))
+            results['mase*'][trial.name + '__epoch_{}'.format(epoch_ind + 1)] = np.nanmean(
+                metrics.MASE(x, y, preds[:, -6:]))
+
+            all_model_preds_in_trial.append(preds)
+
+            ensemble_preds = np.median(np.array(all_model_preds_in_trial), axis=0)
+
+            results['smape']['ens__' + trial.name + '__epoch_{}'.format(epoch_ind + 1)] = np.nanmean(
+                metrics.SMAPE(y, ensemble_preds[:, -6:]))
+            results['mase*']['ens__' + trial.name + '__epoch_{}'.format(epoch_ind + 1)] = np.nanmean(
+                metrics.MASE(x, y, ensemble_preds[:, -6:]))
+
+            del model
+            tf.keras.backend.clear_session()
+
+        ensemble_preds_all_trials.append(ensemble_preds)
+
+    for i, epoch_preds in enumerate(family_preds):
+        preds = np.median(np.array(epoch_preds), axis=0)
+
+        results['smape']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
+        results['mase*']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(
+            metrics.MASE(x, y, preds[:, -6:]))
+
+    final_preds = np.median(np.array(ensemble_preds_all_trials), axis=0)
+
+    results['smape']['ens__' + family.name + '____epoch_'] = np.nanmean(metrics.SMAPE(y, final_preds[:, -6:]))
+    results['mase*']['ens__' + family.name + '____epoch_'] = np.nanmean(metrics.MASE(x, y, final_preds[:, -6:]))
+
+    return results
+
+
+@deprecated
+def evaluate_family_with_multiple_weights_old(family, x, y, result_dict=None, desc=None, verbose=False):
 
     if not result_dict:
         results = {'smape': {}, 'mase*': {}}
