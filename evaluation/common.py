@@ -63,7 +63,7 @@ def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=N
 
             model = tf.keras.models.load_model(single_model)
 
-            preds = evaluation.get_predictions(model, x)
+            preds = get_predictions(model, x)
 
             family_preds[epoch_ind].append(preds)
 
