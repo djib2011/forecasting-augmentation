@@ -32,7 +32,7 @@ args = parser.parse_args()
 
 data_path = 'data/yearly_{}.h5'.format(args.input_len + 6)
 
-data = datasets.seq2seq_generator(data_path, batch_size=1024)
+data = datasets.seq2seq_generator(data_path, batch_size=batch_size)
 
 hp_comb_dict = {'base_layer_size': [128, 256],
                 'direction': ['bi'],

@@ -106,10 +106,47 @@ def run_training(model_gen, hparams: dict, data: tf.data.Dataset, run_name: str,
 
 
 def make_runs(hparam_combinations_dict):
+    """
+    Function that generates all possible combinations from a dictionary.
+
+    For example:
+
+    >>> combs_dict = {'a': [1, 2, 3], 'b': [1, 2], 'c': [1, 2, 3, 4]}
+    >>> combs = make_runs(combs_dict)
+
+    >>> list(combs)
+
+    >>> [{'a': 1, 'b': 1, 'c': 1},
+    ...  {'a': 1, 'b': 1, 'c': 2},
+    ...  {'a': 1, 'b': 1, 'c': 3},
+    ...  {'a': 1, 'b': 1, 'c': 4},
+    ...  {'a': 1, 'b': 2, 'c': 1},
+    ...  {'a': 1, 'b': 2, 'c': 2},
+    ...  {'a': 1, 'b': 2, 'c': 3},
+    ...  {'a': 1, 'b': 2, 'c': 4},
+    ...  {'a': 2, 'b': 1, 'c': 1},
+    ...  {'a': 2, 'b': 1, 'c': 2},
+    ...  {'a': 2, 'b': 1, 'c': 3},
+    ...  {'a': 2, 'b': 1, 'c': 4},
+    ...  {'a': 2, 'b': 2, 'c': 1},
+    ...  {'a': 2, 'b': 2, 'c': 2},
+    ...  {'a': 2, 'b': 2, 'c': 3},
+    ...  {'a': 2, 'b': 2, 'c': 4},
+    ...  {'a': 3, 'b': 1, 'c': 1},
+    ...  {'a': 3, 'b': 1, 'c': 2},
+    ...  {'a': 3, 'b': 1, 'c': 3},
+    ...  {'a': 3, 'b': 1, 'c': 4},
+    ...  {'a': 3, 'b': 2, 'c': 1},
+    ...  {'a': 3, 'b': 2, 'c': 2},
+    ...  {'a': 3, 'b': 2, 'c': 3},
+    ...  {'a': 3, 'b': 2, 'c': 4}]
+
+    :param hparam_combinations_dict: Dictionary with all values for each hyperparameter.
+    :return: List with dictionary with all possible combinations.
+    """
 
     names = hparam_combinations_dict.keys()
     combs = itertools.product(*hparam_combinations_dict.values())
 
     for c in combs:
         yield dict(zip(names, c))
-
