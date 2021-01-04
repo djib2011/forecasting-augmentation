@@ -36,10 +36,10 @@ data = datasets.seq2seq_generator(data_path, batch_size=1024)
 
 hp_comb_dict = {'base_layer_size': [128, 256],
                 'direction': ['bi'],
-                'depth': [3],
+                'depth': [2, 3],
                 'input_seq_length': [18],
                 'output_seq_length': [6],
-                'property': ['small_dense', 'layernorm']}
+                'property': ['small_dense', 'batchnorm', 'layernorm', 'dropout', 'inverse']}
 
 hp_generator = training.make_runs(hp_comb_dict)
 

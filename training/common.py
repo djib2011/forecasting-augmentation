@@ -98,6 +98,7 @@ def run_training(model_gen, hparams: dict, data: tf.data.Dataset, run_name: str,
             break
     else:
         for i in range(num_runs):
+            print('Running experiment: "{}"\nIteration: {}/{}'.format(run_name.split('/')[-1], i+1, num_runs))
             model = model_gen(hparams)
             _ = single_model_training_fcn(model, data, run_name, run_num=i, **kwargs)
             del model
