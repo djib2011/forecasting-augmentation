@@ -50,8 +50,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    result_dir = 'results/OLD_benchmark/'
-    report_dir = 'reports/OLD_benchmark/'
+    result_dir = 'results/benchmark/'
+    report_dir = 'reports/benchmark/'
 
     columns = ['input_len']
 
