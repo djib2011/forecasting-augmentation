@@ -169,7 +169,7 @@ model_names = {'bi_2_small_dense': bidirectional_2_layer_small_dense,
                'bi_2_layernorm': bidirectional_2_layer_ln,
                'bi_3_layernorm': bidirectional_3_layer_ln,
                'bi_2_inverse': bidirectional_2_layer_inverse,
-               'bi_3_inverse': bidirectional_2_layer_inverse}
+               'bi_3_inverse': bidirectional_3_layer_inverse}
 
 
 if __name__ == '__main__':
