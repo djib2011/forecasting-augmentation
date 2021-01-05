@@ -6,6 +6,8 @@ import evaluation
 
 if __name__ == '__main__':
 
+    batch_size = 1024
+
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -21,4 +23,4 @@ if __name__ == '__main__':
     columns = ['direction', 'size', 'depth', 'property']
 
     evaluation.run_evaluation(result_dir=result_dir, report_dir=report_dir, columns=columns,
-                              debug=args.debug, snapshot=False)
+                              debug=args.debug, snapshot=False, batch_size=batch_size)

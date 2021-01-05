@@ -6,12 +6,23 @@ from pathlib import Path
 import tensorflow as tf
 import warnings
 import pickle as pkl
+from typing import Union, Sequence
 
 from utils import metrics, deprecated
 import datasets
 
 
-def get_predictions(model, X, batch_size=256):
+def get_predictions(model: tf.keras.models.Model, X: np.ndarray, batch_size: int = 1024) -> np.ndarray:
+    """
+    Compute a model's predictions on a given dataset of timeseries.
+
+    Note: model is assumed to be trained on normalized data.
+
+    :param model: A tf.keras model.
+    :param X: A dataset to generate predictions on
+    :param batch_size: The batch size.
+    :return: An array of the model's predictions.
+    """
     preds = []
 
     def predict_on_unscaled(x):
@@ -30,7 +41,52 @@ def get_predictions(model, X, batch_size=256):
     return np.vstack(preds)
 
 
-def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=None, verbose=False):
+def evaluate_family_with_multiple_weights(family: Union[str, Path], x: np.ndarray, y: np.ndarray,
+                                          result_dict: dict = None, desc: str = None, verbose: bool = False,
+                                          batch_size: int = 1024) -> dict:
+    """
+    Run full evaluation on a family of models, each having multiple weights (i.e. one for each epoch).
+
+    The function will:
+
+        1) Find all models in the family and all instances of the specific model.
+        2) Get the predictiond for each instance.
+        3) Compute the sMAPE and MASE estimate of each instance.
+        4) Compute the ensemble predictions across instances of a specific model, as well as their sMAPE and MASE*.
+        5) Compute the ensemble predictions across different models, per epoch, as well as their sMAPE and MASE*.
+        6) Compute the ensemble predictions of the last epoch ensembles of (4), as well as their sMAPE and MASE*.
+
+
+    The function assumes that the models are saved as:
+
+        results_dir
+            |
+            |________experiment1__0
+            |              |
+            |              |________weights_epoch_0.h5
+            |              |________weights_epoch_1.h5
+            |              |________weights_epoch_2.h5
+            |                      ...
+            |________experiment1__1
+            |               |
+            |               |________weights_epoch_0.h5
+            |               |________weights_epoch_1.h5
+            |               |________weights_epoch_2.h5
+            |                        ...
+                        ...
+
+
+    :param family: Location and name of the family of models. In the example structure above, the family would be:
+                   'results_dir/experiment'
+
+    :param x: Numpy array containing insample data
+    :param y: Numpy array containing out-of-sample data
+    :param result_dict: Dictionary to store the reuslts in (optional)
+    :param desc: Description for the tqdm (usually the experiment's name)
+    :param verbose: Option to print messages
+    :param batch_size: The batch size
+    :return: A dictionary containing the sMAPE and MASE* of the individual models and their ensembles.
+    """
 
     if not result_dict:
         results = {'smape': {}, 'mase*': {}}
@@ -63,7 +119,7 @@ def evaluate_family_with_multiple_weights(family, x, y, result_dict=None, desc=N
 
             model = tf.keras.models.load_model(single_model)
 
-            preds = get_predictions(model, x)
+            preds = get_predictions(model, x, batch_size=batch_size)
 
             family_preds[epoch_ind].append(preds)
 
@@ -172,7 +228,49 @@ def evaluate_family_with_multiple_weights_old(family, x, y, result_dict=None, de
     return results
 
 
-def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None):
+def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None, batch_size=1024):
+    """
+    Evaluation script for snapshot ensembles
+
+    The function will:
+
+        1) Find all models in the family and all instances of the specific model.
+        2) Get the predictiond for each instance.
+        3) Compute the sMAPE and MASE estimate of each instance.
+        4) Compute the ensemble predictions across instances of a specific model, as well as their sMAPE and MASE*.
+        5) Compute the ensemble predictions across different models, per epoch, as well as their sMAPE and MASE*.
+        6) Compute the ensemble predictions of the last epoch ensembles of (4), as well as their sMAPE and MASE*.
+
+
+    The function assumes that the models are saved as:
+
+        results_dir
+            |
+            |________experiment1__0
+            |              |
+            |              |________weights_epoch_0.h5
+            |              |________weights_epoch_1.h5
+            |              |________weights_epoch_2.h5
+            |                      ...
+            |________experiment1__1
+            |               |
+            |               |________weights_epoch_0.h5
+            |               |________weights_epoch_1.h5
+            |               |________weights_epoch_2.h5
+            |                        ...
+                        ...
+
+
+    :param family: Location and name of the family of models. In the example structure above, the family would be:
+                   'results_dir/experiment'
+
+    :param x: Numpy array containing insample data
+    :param y: Numpy array containing out-of-sample data
+    :param result_dict: Dictionary to store the reuslts in (optional)
+    :param desc: Description for the tqdm (usually the experiment's name)
+    :param batch_size: The batch size
+    :return: A dictionary containing the sMAPE and MASE* of the individual models and their ensembles.
+    """
 
     if not result_dict:
         results = {'smape': {}, 'mase*': {}}
@@ -180,7 +278,7 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None):
         results = result_dict.copy()
 
     family = Path(family)
-    trials = list(family.parent.glob(family.name + '*'))  # list for tqdm
+    trials = list(family.parent.glob(family.name + '*'))  # TODO: fix sotred bug
 
     family_preds = []
     num = 0
@@ -192,7 +290,7 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None):
 
         model = tf.keras.models.load_model(model_dir)
 
-        preds = get_predictions(model, x)
+        preds = get_predictions(model, x, batch_size=batch_size)
         family_preds.append(preds)
 
         tf.keras.backend.clear_session()
@@ -208,7 +306,18 @@ def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None):
     return results
 
 
-def evaluate_multiple_families(families, x, y, snapshot=False):
+def evaluate_multiple_families(families: Union[str, Sequence], x: np.ndarray, y: np.ndarray, snapshot: bool = False,
+                               batch_size: int = 1024):
+    """
+    Runs single-family evaluation function in a loop for multiple families
+
+    :param families: Sequence of individual families, each containing the location and name of the family of models.
+    :param x: Numpy array containing insample data
+    :param y: Numpy array containing out-of-sample data
+    :param snapshot: Option on whether or not the training used snapshot ensembles
+    :param batch_size: The batch size
+    :return: A dictionary with the results
+    """
     results = {'smape': {}, 'mase*': {}}
 
     family_eval_fcn = evaluate_snapshot_ensemble if snapshot else evaluate_family_with_multiple_weights
@@ -222,7 +331,7 @@ def evaluate_multiple_families(families, x, y, snapshot=False):
             template = 'family {:>' + num_digits + '} of {:<' + num_digits + '}'
 
     for i, family in enumerate(families):
-        results = family_eval_fcn(family, x, y, results, desc=template.format(i+1, len(families)))
+        results = family_eval_fcn(family, x, y, results, desc=template.format(i+1, len(families)), batch_size=batch_size)
 
         with open('/tmp/{}.pkl'.format(Path(family).name), 'wb') as f:
             pkl.dump(results, f)
@@ -318,7 +427,7 @@ def create_results_df_snapshot(results, columns):
 
 
 def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return_results=False,
-                   snapshot=False, debug=False):
+                   snapshot=False, debug=False, batch_size=1024):
 
     tracked_file = (Path(report_dir) / 'tracked.pkl')
     if tracked_file.exists():
@@ -348,7 +457,7 @@ def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return
                 print('{:>2}. {}'.format(i+1, t))
 
     else:
-        results = evaluate_multiple_families(families, X_test, y_test, snapshot=snapshot)
+        results = evaluate_multiple_families(families, X_test, y_test, snapshot=snapshot, batch_size=batch_size)
         
         if return_results:
             return results, tracked
