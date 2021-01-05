@@ -17,6 +17,6 @@ def get_optimal_setup(hparams):
 
     hparams['input_seq_length'] = 18
     hparams['output_seq_length'] = 6
-    hparams['size'] = 128
+    hparams['base_layer_size'] = 128
 
     return sequential_exp.model_names['bi_3_batchnorm'], hparams
