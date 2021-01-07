@@ -49,10 +49,29 @@ for hp in hp_generator:
     run_name = 'fine_tune_best/opt_{}__lr_{}__ams_{}__decay_{}'.format(hp['optimizer'],
                                                                        hp['learning_rate'],
                                                                        hp['amsgrad'],
-                                                                       hp['exp_decay'])
-
+                                                                       hp['exp_decay'])    
+    
     if args.debug:
         print('run name:', run_name)
+        model = model_gen(hp)
+        opt = utils.optimizers.build_optimizer(hp['optimizer'], learning_rate=hp['learning_rate'],
+                                               amsgrad=hp['amsgrad'])
+        model.compile(loss='mae', optimizer=opt, metrics=['mae', 'mse'])
+        for x, y in data:
+            model.train_on_batch(x, y)
+            break
+            
+    else:
+        for i in range(num_runs):
+            model = model_gen(hp)
+            opt = utils.optimizers.build_optimizer(hp['optimizer'], learning_rate=hp['learning_rate'],
+                                                   amsgrad=hp['amsgrad'])
 
-    training.run_training(model_gen, hp, data, run_name, num_runs=num_runs, debug=args.debug, batch_size=batch_size,
-                          epochs=epochs, snapshot=snapshot, warmup=warmup, patience=patience)
+            model.compile(loss='mae', optimizer=opt, metrics=['mae', 'mse'])
+
+            model = training.train_model_single(model, data, run_name, run_num=i, exp_decay=hp['exp_decay'],
+                                                batch_size=batch_size, epochs=epochs, snapshot=snapshot, warmup=warmup,
+                                                patience=patience)
+            del model
+            tf.keras.backend.clear_session()
+

@@ -92,6 +92,14 @@ def run_training(model_gen, hparams: dict, data: tf.data.Dataset, run_name: str,
 
     if debug:
         model = model_gen(hparams)
+        print('Hparams:')
+        for k, v in hparams.items():
+            print(' - {}: {}'.format(k, v))
+        
+        print()
+        model.summary()
+        print()
+        
         for x, y in data:
             print('Batch shapes:', x.shape, y.shape)
             model.train_on_batch(x, y)
