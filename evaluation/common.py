@@ -142,17 +142,24 @@ def evaluate_family_with_multiple_weights(family: Union[str, Path], x: np.ndarra
 
         ensemble_preds_all_trials.append(ensemble_preds)
 
+    cross_model_ensemble_preds = []
     for i, epoch_preds in enumerate(family_preds):
         preds = np.median(np.array(epoch_preds), axis=0)
 
+        cross_model_ensemble_preds.append(preds)
+
         results['smape']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(metrics.SMAPE(y, preds[:, -6:]))
-        results['mase*']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(
-            metrics.MASE(x, y, preds[:, -6:]))
+        results['mase*']['ens__' + family.name + '____epoch_{}'.format(i)] = np.nanmean(metrics.MASE(x, y, preds[:, -6:]))
 
     final_preds = np.median(np.array(ensemble_preds_all_trials), axis=0)
 
     results['smape']['ens__' + family.name + '____epoch_'] = np.nanmean(metrics.SMAPE(y, final_preds[:, -6:]))
     results['mase*']['ens__' + family.name + '____epoch_'] = np.nanmean(metrics.MASE(x, y, final_preds[:, -6:]))
+
+    final_preds_cm = np.median(np.array(cross_model_ensemble_preds), axis=0)
+
+    results['smape']['ens__' + family.name + '__-1__epoch_'] = np.nanmean(metrics.SMAPE(y, final_preds_cm[:, -6:]))
+    results['mase*']['ens__' + family.name + '__-1__epoch_'] = np.nanmean(metrics.MASE(x, y, final_preds_cm[:, -6:]))
 
     return results
 

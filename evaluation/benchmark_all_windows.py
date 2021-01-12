@@ -41,25 +41,18 @@ def create_results_df(results):
 
 if __name__ == '__main__':
 
-    import argparse
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--debug', action='store_true',
-                        help='Run in debug mode: Don\'t evaluate any of the models; print lots of diagnostic messages.')
-
-    args = parser.parse_args()
-
     result_dir = 'results/benchmark_all_windows/'
     report_dir = 'reports/benchmark_all_windows/'
 
     columns = ['input_len']
 
     X_test, y_test = datasets.load_test_set()
+
     results = evaluation.evaluate_family_with_multiple_weights(result_dir + 'inp_18', X_test, y_test, verbose=True)
+
     df = evaluation.create_results_df_multi_weights(results, columns=columns)
 
     if not os.path.isdir(report_dir):
         os.makedirs(report_dir)
-    df.to_csv(report_dir + 'results.csv', index=False)
 
+    df.to_csv(report_dir + 'results.csv', index=False)
