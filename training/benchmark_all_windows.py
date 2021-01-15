@@ -17,9 +17,9 @@ import utils
 # Global configs
 num_runs = 50
 batch_size = 1024
-epochs = 18
+epochs = 25
 snapshot = False
-warmup = 3
+warmup = 10
 patience = 1
 
 # Parse command line arguments
