@@ -434,7 +434,7 @@ def create_results_df_snapshot(results, columns):
 
 
 def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return_results=False,
-                   snapshot=False, debug=False, batch_size=1024):
+                   snapshot=False, debug=False, batch_size=1024, inp_len=18):
 
     tracked_file = (Path(report_dir) / 'tracked.pkl')
     if tracked_file.exists():
@@ -448,7 +448,7 @@ def run_evaluation(result_dir, report_dir, columns, exclude_pattern=None, return
     untracked.update(undertracked)
     tracked.update(untracked)
     
-    X_test, y_test = datasets.load_test_set()
+    X_test, y_test = datasets.load_test_set(N=inp_len)
 
     families = [Path(result_dir) / u for u in untracked]
 

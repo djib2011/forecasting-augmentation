@@ -57,31 +57,44 @@ def artemis_generator(data_path, batch_size=256, data_col_start=4, shuffle=True)
 
 if __name__ == '__main__':
 
-    # import argparse
-    #
-    # Parse command line arguments
-    # parser = argparse.ArgumentParser()
-    #
-    # parser.add_argument('-i', '--input_len', type=int, default=12, help='Insample length.')
-    # parser.add_argument('-c', '--combinations', type=int, default=2, help='Number of series combined to produce augmentations.')
-    # parser.add_argument('-n', '--num_samples', type=int, default=23000, help='Number of augmented samples.')
-    # parser.add_argument('--no_window', action='store_true', help='Don\'t generate windows from the timeseries.')
-    #
-    # args = parser.parse_args()
-    #
-    # window = args.input_len + 6
-    #
-    # if args.no_window:
-    #     x_path = 'data/yearly_{}_aug_by_{}_num_{}_nw.csv'.format(window, args.combinations, args.num_samples)
-    #     y_path = 'data/yearly_{}_y_nw.csv'.format(window)
-    # else:
-    #     x_path = 'data/yearly_{}_aug_by_{}_num_{}.csv'.format(window, args.combinations, args.num_samples)
-    #     y_path = 'data/yearly_{}_nw.csv'.format(window)
+    option = 3
 
-    data_path = '/home/artemis/AugmExp/Data/train_in18_all_windows.npy'
-    gen = artemis_generator(data_path, batch_size=256, shuffle=True)
+    if option == 1:
+        import argparse
+        
+        parser = argparse.ArgumentParser()
+        
+        parser.add_argument('-i', '--input_len', type=int, default=12, help='Insample length.')
+        parser.add_argument('-c', '--combinations', type=int, default=2, help='Number of series combined to produce augmentations.')
+        parser.add_argument('-n', '--num_samples', type=int, default=23000, help='Number of augmented samples.')
+        parser.add_argument('--no_window', action='store_true', help='Don\'t generate windows from the timeseries.')
+        
+        args = parser.parse_args()
+        
+        window = args.input_len + 6
+        
+        if args.no_window:
+            x_path = 'data/yearly_{}_aug_by_{}_num_{}_nw.csv'.format(window, args.combinations, args.num_samples)
+            y_path = 'data/yearly_{}_y_nw.csv'.format(window)
+        else:
+            x_path = 'data/yearly_{}_aug_by_{}_num_{}.csv'.format(window, args.combinations, args.num_samples)
+            y_path = 'data/yearly_{}_nw.csv'.format(window)
 
-    for x, y in gen:
-        print('Train set:')
-        print(x.shape, y.shape)
-        break
+    elif option == 2:
+        data_path = '/home/artemis/AugmExp/Data/train_in18_all_windows.npy'
+        gen = artemis_generator(data_path, batch_size=256, shuffle=True)
+
+        for x, y in gen:
+            print('Train set:')
+            print(x.shape, y.shape)
+            break
+
+
+    elif option == 3:
+        data_path = '/home/artemis/AugmExp/Data/type1/non_m4/train_only_lw_478k_clean.npy'
+        gen = artemis_generator(data_path, batch_size=256, shuffle=True)
+        print('Gen length: ', len(gen))
+        for x, y in gen:
+            print('Train set:')
+            print(x.shape, y.shape)
+            break
