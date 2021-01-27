@@ -14,11 +14,11 @@ import argparse
 import training
 
 # Global configs
-num_runs = 4
+num_runs = 50
 batch_size = 1024
-epochs = 15
+epochs = 25
 snapshot = False
-warmup = 0
+warmup = 10
 patience = 1
 
 # Parse command line arguments
