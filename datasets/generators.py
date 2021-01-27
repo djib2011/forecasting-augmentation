@@ -6,7 +6,6 @@ import h5py
 def seq2seq_generator(data_path: str, batch_size: int = 256, shuffle: bool = True) -> tf.data.Dataset:
     """
     Factory for building TensorFlow data generators for loading time series data.
-    Also supports data augmentation and loading series with overlap for backcast.
 
     :param data_path: Path of a HDF5 file that contains X and y
     :param batch_size: The batch size
@@ -34,15 +33,31 @@ def seq2seq_generator(data_path: str, batch_size: int = 256, shuffle: bool = Tru
     return data
 
 
-def artemis_generator(data_path, batch_size=256, data_col_start=4, shuffle=True):
+def artemis_generator(data_path: str, batch_size=256, data_col_start=4, shuffle=True) -> tf.data.Dataset:
+    """
+    Factory for building TensorFlow data generators for loading time series data that are in Artemis' format.
+
+    Should be used with normalized data.
+
+    :param data_path: Path of a HDF5 file that contains X and y
+    :param batch_size: The batch size
+    :param data_col_start: Which column to start from (first columns are reserved for IDs, scales, etc.)
+    :param shuffle: True/False whether or not the data will be shuffled.
+    :return: A TensorFlow data generator.
+    """
+
+    # Load the data
     data = np.load(data_path, allow_pickle=True)
 
+    # Split into insample and out-of-sample
     x = data[:, data_col_start:-6]
     y = data[:, -6:]
 
+    # Drop series that have at least one out-of-sample value higher than 10
     x = x[np.all((y < 10) & (y > -10), axis=1)]
     y = y[np.all((y < 10) & (y > -10), axis=1)]
 
+    # Create the tf dataset
     gen = tf.data.Dataset.from_tensor_slices((x, y))
     if shuffle:
         gen = gen.shuffle(buffer_size=len(x))
@@ -50,6 +65,7 @@ def artemis_generator(data_path, batch_size=256, data_col_start=4, shuffle=True)
     gen = gen.batch(batch_size=batch_size)
     gen = gen.prefetch(buffer_size=1)
 
+    # Add len attribute
     gen.__class__ = type(gen.__class__.__name__, (gen.__class__,), {'__len__': lambda self: len(x)})
 
     return gen

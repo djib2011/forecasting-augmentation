@@ -1,3 +1,7 @@
+"""
+Script that creates datasets of generated timeseries using various combination strategies.
+"""
+
 import numpy as np
 import os
 import sys

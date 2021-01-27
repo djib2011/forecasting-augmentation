@@ -1,3 +1,13 @@
+"""
+Create the dataset that will be used for experiments from the original M4 data.
+
+Command line arguments:
+-i: length of the input data. window length = input length + 6
+--line: convert the out-of-sample data into a line
+--no_window: option to use the last window of the original dataset
+             if not used will generate all possible windows of the given length
+"""
+
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -36,12 +46,19 @@ args = parser.parse_args()
 
 window = args.input_len + 6
 
+# Generate line
 if args.line:
     from sklearn.linear_model import LinearRegression
 
     lin_reg = LinearRegression()
 
     def best_line(y):
+        """
+        Function that generates a line from data y and returns that line
+
+        :param y: a series
+        :return: a line that fits the series
+        """
         lin_reg.fit(np.arange(len(y))[:, np.newaxis], y[:, np.newaxis])
         return lin_reg.predict(np.arange(len(y))[:, np.newaxis]).flatten()
 

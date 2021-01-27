@@ -1,3 +1,14 @@
+"""
+This script is used to generate timesereis for augmentation, by combining 2 or more timesereis from the M4 yearly
+dataset.
+
+Command line arguments:
+-i: length of the input data. window length = input length + 6
+-n: number of samples to generate
+-c: how many series to combine to generate 1 sample
+--no_window: use the last window of the original dataset
+"""
+
 import pickle as pkl
 import numpy as np
 import argparse
