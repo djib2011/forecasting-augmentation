@@ -39,7 +39,7 @@ hp_comb_dict = {'base_layer_size': [32, 64],
                 'depth': [2, 3],
                 'input_seq_length': [18],
                 'output_seq_length': [6],
-                'property': ['small_dense', 'batchnorm', 'layernorm', 'dropout', 'inverse']}
+                'property': ['fully', 'fullybn']}
 
 hp_generator = training.make_runs(hp_comb_dict)
 
