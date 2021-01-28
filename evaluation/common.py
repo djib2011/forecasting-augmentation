@@ -235,7 +235,8 @@ def evaluate_family_with_multiple_weights_old(family, x, y, result_dict=None, de
     return results
 
 
-def evaluate_snapshot_ensemble(family, x, y, result_dict=None, desc=None, batch_size=1024):
+def evaluate_snapshot_ensemble(family: Union[str, Path], x: np.ndarray, y: np.ndarray, result_dict: dict = None,
+                               desc: str = None, batch_size: int = 1024) -> dict:
     """
     Evaluation script for snapshot ensembles
 
@@ -346,7 +347,26 @@ def evaluate_multiple_families(families: Union[str, Sequence], x: np.ndarray, y:
     return results
 
 
-def find_untracked_trials(result_dir, tracked=None, exclude_pattern=None, verbose=False):
+def find_untracked_trials(result_dir: Union[str, Path], tracked: dict = None, exclude_pattern: str = None,
+                          verbose: bool = False) -> (dict,) * 3:
+    """
+    Search for experiments and runs in the 'result_dir', see which of these are already tracked or undertracked and
+    return the findings.
+
+    Tracked results examines (a) existence of experiment and (b) number of runs per experiment.
+
+    Glossary:
+        - tracked: experiments that are fully tracked (all runs accounted for)
+        - untracked: experiments that are completely untracked
+        - undertracked: tracked experiments but with fewer runs
+        - redundant: experiments that were previously tracked, but whose weights weren't identified
+
+    :param result_dir: Directory that we will search to find runs
+    :param tracked: Dictionary that contains what experiments have been tracked and the number of runs per experiment
+    :param exclude_pattern: Pattern to exclude from search
+    :param verbose: Option to analytically display display results
+    :return: dictionaries with untracked, undertracked and redundant experiments
+    """
 
     if not tracked:
         tracked = {}
