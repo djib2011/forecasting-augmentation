@@ -34,7 +34,7 @@ data_path = 'data/yearly_{}.h5'.format(args.input_len + 6)
 
 data = datasets.seq2seq_generator(data_path, batch_size=batch_size)
 
-hp_comb_dict = {'base_layer_size': [32, 64],
+hp_comb_dict = {'base_layer_size': [128, 256],
                 'direction': ['bi'],
                 'depth': [2, 3],
                 'input_seq_length': [18],
