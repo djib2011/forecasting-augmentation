@@ -3,15 +3,40 @@ import tensorflow as tf
 import h5py
 
 
-def seq2seq_generator(data_path: str, batch_size: int = 256, shuffle: bool = True) -> tf.data.Dataset:
+def seq2seq_generator(data_path: str, batch_size: int = 256, shuffle: bool = True,
+                      augmentation: float = 0, debug: bool = False) -> tf.data.Dataset:
     """
     Factory for building TensorFlow data generators for loading time series data.
 
     :param data_path: Path of a HDF5 file that contains X and y
     :param batch_size: The batch size
     :param shuffle: True/False whether or not the data will be shuffled.
+    :param augmentation: The percentage of the batch that will be augmented data. E.g. if augmentation == 0.75 and
+                         batch_size == 200, then each batch will consist of 50 real series and 150 fake ones.
+    :param debug: True/False whether or not to print information about the batches.
     :return: A TensorFlow data generator.
     """
+
+    aug_batch_size = int(batch_size * augmentation)
+    real_batch_size = int(batch_size * (1 - augmentation))
+
+    if debug:
+        print('---------- Generator ----------')
+        print('Augmentation percentage:', augmentation)
+        print('Batch size:             ', batch_size)
+        print('Real batch size:        ', real_batch_size)
+        print('Augmentation batch size:', aug_batch_size)
+        print('Max aug num:            ', real_batch_size * (real_batch_size - 1) // 2)
+        print('------------------------------')
+
+    def augment(x, y):
+        random_ind_1 = tf.random.categorical(tf.math.log([[1.] * real_batch_size]), aug_batch_size)
+        random_ind_2 = tf.random.categorical(tf.math.log([[1.] * real_batch_size]), aug_batch_size)
+
+        x_aug = (tf.gather(x, random_ind_1) + tf.gather(x, random_ind_2)) / 2
+        y_aug = (tf.gather(y, random_ind_1) + tf.gather(y, random_ind_2)) / 2
+
+        return tf.concat([x, tf.squeeze(x_aug, [0])], axis=0), tf.concat([y, tf.squeeze(y_aug, [0])], axis=0)
 
     # Load data
     with h5py.File(data_path, 'r') as hf:
@@ -21,12 +46,14 @@ def seq2seq_generator(data_path: str, batch_size: int = 256, shuffle: bool = Tru
     x = x[..., np.newaxis]
     y = y[..., np.newaxis]
 
-    # Tensorflow dataset
+    # TensorFlow Dataset
     data = tf.data.Dataset.from_tensor_slices((x, y))
     if shuffle:
         data = data.shuffle(buffer_size=len(x))
     data = data.repeat()
-    data = data.batch(batch_size=batch_size)
+    data = data.batch(batch_size=real_batch_size)
+    if augmentation:
+        data = data.map(augment)
     data = data.prefetch(buffer_size=1)
 
     data.__class__ = type(data.__class__.__name__, (data.__class__,), {'__len__': lambda self: len(x)})
