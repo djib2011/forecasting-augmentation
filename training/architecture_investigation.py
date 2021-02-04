@@ -34,12 +34,12 @@ data_path = 'data/yearly_{}.h5'.format(args.input_len + 6)
 
 data = datasets.seq2seq_generator(data_path, batch_size=batch_size)
 
-hp_comb_dict = {'base_layer_size': [128, 256],
+hp_comb_dict = {'base_layer_size': [512, 1024],
                 'direction': ['bi'],
-                'depth': [2, 3],
+                'depth': [2],
                 'input_seq_length': [18],
                 'output_seq_length': [6],
-                'property': ['fully', 'fullybn']}
+                'property': ['fully']}
 
 hp_generator = training.make_runs(hp_comb_dict)
 

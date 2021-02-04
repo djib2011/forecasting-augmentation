@@ -15,11 +15,11 @@ import training
 
 
 # Global configs
-num_runs = 4
+num_runs = 10
 batch_size = 2048
-epochs = 15
+epochs = 25
 snapshot = False
-warmup = 0
+warmup = 10
 patience = 1
 
 # Parse command line arguments
@@ -37,10 +37,8 @@ run_name = 'windows/inp_{}__numsamples_{}'.format(args.input_len, args.num_sampl
 
 data = datasets.artemis_generator(data_path, batch_size=batch_size)
 
-hp = {'base_layer_size': 256, 'input_seq_length': args.input_len, 'output_seq_length': 6}
-model_gen = models.sequential.bidirectional_2_layer
-
-# model_gen, hparams = models.get_optimal_setup()
+model_gen, hp = models.get_optimal_setup()
 
 training.run_training(model_gen, hp, data, run_name, num_runs=num_runs, debug=args.debug, batch_size=batch_size,
                       epochs=epochs, snapshot=snapshot, warmup=warmup, patience=patience)
+
