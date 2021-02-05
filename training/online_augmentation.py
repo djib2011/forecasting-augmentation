@@ -15,7 +15,7 @@ import training
 import utils
 
 # Global configs
-num_runs = 4
+num_runs = 10
 batch_size = 2048
 epochs = 15
 snapshot = False
@@ -32,7 +32,7 @@ args = parser.parse_args()
 
 data_path = 'data/yearly_{}.h5'.format(18 + 6)
 
-conb_dict = {'aug_perc': [0.25, 0.5, 0.75],
+comb_dict = {'aug_perc': [0.25, 0.5, 0.75],
              'input_seq_length': [18],
              'output_seq_length': [6]}
 
@@ -63,3 +63,4 @@ for hp in hp_generator:
 
             del model
             tf.keras.backend.clear_session()
+
