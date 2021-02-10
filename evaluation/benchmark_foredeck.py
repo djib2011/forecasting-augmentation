@@ -46,9 +46,9 @@ if __name__ == '__main__':
 
     columns = ['input_len']
 
-    X_test, y_test = datasets.load_test_set(N=14)
+    X_test, y_test = datasets.load_test_set(N=18)
 
-    results = evaluation.evaluate_family_with_multiple_weights(result_dir + 'inp_14', X_test, y_test, verbose=True)
+    results = evaluation.evaluate_family_with_multiple_weights(result_dir + 'inp_18', X_test, y_test, verbose=True)
 
     df = evaluation.create_results_df_multi_weights(results, columns=columns)
 

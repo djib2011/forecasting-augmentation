@@ -32,18 +32,19 @@ args = parser.parse_args()
 
 data_path = '/home/artemis/AugmExp/Data/type1/non_m4/train_only_lw_478k_clean.npy'
 
-data = datasets.artemis_generator(data_path, batch_size=batch_size)
+data = datasets.artemis_generator(data_path, batch_size=batch_size, data_col_start=0)
 
 model_gen, hp = models.get_optimal_setup(hparams={})
-hp['input_seq_length'] = 14
+hp['input_seq_length'] = 18
 
-run_name = 'benchmark_foredeck/inp_14'
+run_name = 'benchmark_foredeck/inp_18'
     
 if args.debug:
     print('run name:', run_name)
     model = model_gen(hp)
 
     for x, y in data:
+        print(x.shape, y.shape)
         model.train_on_batch(x, y)
         break
             
