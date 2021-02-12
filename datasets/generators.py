@@ -98,9 +98,68 @@ def artemis_generator(data_path: str, batch_size=256, data_col_start=4, shuffle=
     return gen
 
 
+def artemis_online_interpolation_generator(data_path, batch_size):
+
+    def augment_interpolate(x, y):
+        # Select random subsample from the time series
+        max_idx = sample_size - win_size
+        start_id = tf.random.uniform((), minval=0, maxval=max_idx, dtype=tf.dtypes.int64)
+        slice_idx = tf.range(0, win_size, dtype=tf.dtypes.int64)
+        temp_ts = tf.concat([x, y], axis=0)
+        subsample = tf.gather(temp_ts, slice_idx + start_id)
+
+        # Interpolate to fill middle points
+        xd = tf.range(((win_size * 2) - 1), dtype=np.float64, delta=1)
+        new_ts = interp_regular_1d_grid(xd, x_ref_min=0, x_ref_max=24, y_ref=subsample)
+        new_ts = tf.gather(new_ts, tf.range(1, (sample_size + 1), dtype=tf.dtypes.int64))
+
+        # Split to input and output tensors
+        new_x = tf.gather(new_ts, tf.range(0, 18, dtype=tf.dtypes.int64))
+        new_y = tf.gather(new_ts, tf.range(18, 24, dtype=tf.dtypes.int64))
+
+        # Scale new sample
+        max_x = tf.math.reduce_max(new_x)
+        min_x = tf.math.reduce_min(new_x)
+        new_x = (new_x - min_x) / (max_x - min_x)
+        new_y = (new_y - min_x) / (max_x - min_x)
+
+        # return new_x, new_y
+        if ((tf.reduce_max(new_y) < 10) and (tf.reduce_min(new_y) > -10)):
+            return new_x, new_y
+        else:
+            return x, y
+
+    # Params
+    win_size = 13
+    sample_size = 24
+
+    # Load preprocessed data
+    temp = np.load(data_path, allow_pickle=True)
+    x_t = temp[:, 4:22]                             # SHOULD CHANGE DEPENDING ON THE INPUT FILE
+    y_t = temp[:, -6:]
+
+    # Clear outliers
+    x_t = x_t[np.all((y_t < 10) & (y_t > -10), axis=1)]
+    y_t = y_t[np.all((y_t < 10) & (y_t > -10), axis=1)]
+    train_length = len(x_t) * 2
+
+    # Training data
+    data_train = tf.data.Dataset.from_tensor_slices((x_t, y_t))
+    data_train_aug = data_train.map(augment_interpolate, num_parallel_calls=tf.data.AUTOTUNE)
+    data_train = data_train.concatenate(data_train_aug)
+    data_train = data_train.shuffle(buffer_size=train_length)
+    data_train = data_train.repeat()
+    data_train = data_train.batch(batch_size=batch_size)
+    data_train = data_train.prefetch(buffer_size=tf.data.AUTOTUNE)
+
+    gen.__class__ = type(gen.__class__.__name__, (gen.__class__,), {'__len__': lambda self: train_length})
+
+    return data_train
+
+
 if __name__ == '__main__':
 
-    option = 3
+    option = 4
 
     if option == 1:
         import argparse
@@ -132,9 +191,17 @@ if __name__ == '__main__':
             print(x.shape, y.shape)
             break
 
-
     elif option == 3:
         data_path = '/home/artemis/AugmExp/Data/type1/non_m4/train_only_lw_478k_clean.npy'
+        gen = artemis_generator(data_path, batch_size=256, shuffle=True)
+        print('Gen length: ', len(gen))
+        for x, y in gen:
+            print('Train set:')
+            print(x.shape, y.shape)
+            break
+
+    elif option == 4:
+        data_path = '/home/artemis/AugmExp/Data/type1/train_in18_win1000.npy'
         gen = artemis_generator(data_path, batch_size=256, shuffle=True)
         print('Gen length: ', len(gen))
         for x, y in gen:
