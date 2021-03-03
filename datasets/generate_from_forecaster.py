@@ -4,32 +4,42 @@ import tensorflow as tf
 import datasets
 
 
+
 def predict_N_ahead(model, batch, total_horizon=24, individual_horizon=6):
 
-    result = []
+    results = []
+    batch = batch.numpy()
+
+    def predict_on_unscaled(batch):
+        x = batch[..., 0]
+        mn, mx = x.min(axis=1).reshape(-1, 1), x.max(axis=1).reshape(-1, 1)
+        x_sc = (x - mn) / (mx - mn)
+        pred = model(x_sc[..., np.newaxis])
+        pred_us = pred[..., 0] * (mx - mn) + mn
+        return pred_us[..., np.newaxis]
 
     for i in range(0, total_horizon, individual_horizon):
-        preds = model.predict(batch)
-        batch = np.concatenate(batch[:, batch.shape[1]-individual_horizon:, :], preds[:, :individual_horizon, :], axis=1)
-        result.append(preds[:individual_horizon])
+        preds = predict_on_unscaled(batch)
+        batch = np.concatenate([batch[:, individual_horizon:, :], preds[:, :individual_horizon, :]], axis=1)
+        results.append(preds[:, :individual_horizon])
 
     return np.concatenate(results, axis=1)
 
 
-def make_augmented_dataset(model_loc, original_dataset_loc, total_horizon=24, individual_horizon=6, num_samples=235460,
-                           batch_size=2048):
-
-    data = datasets.seq2seq_generator(original_dataset_loc, batch_size=batch_size)
-
-    model = tf.keras.models.load_model(model_loc)
-
+def make_augmented_dataset(model, data_it, total_horizon=24, individual_horizon=6, num_samples=235460,
+                           batch_size=2048, real_insample=12):
     aug_batches = []
-    for _ in tqdm(range(num_samples//batch_size+1)):
-        batch = data.__next__()
-        aug_batches.append(predict_N_ahead(model, batch, total_horizon=total_horizon,
-                                           individual_horizon=individual_horizon))
+    for _ in tqdm(range(num_samples // batch_size + 1)):
+        batch = data_it.__next__()
+        full_pred = predict_N_ahead(model, batch[0], total_horizon=total_horizon,
+                                    individual_horizon=individual_horizon)
 
-    return np.concatenate(aug_batches, axis=1)
+        aug_batch = np.concatenate([batch[0][:, :real_insample, :],
+                                    preds[:, real_insample:total_horizon, :]], axis=1)
+
+        aug_batches.append(aug_batch)
+
+    return np.concatenate(aug_batches)
 
 
 if __name__ == '__main__':
@@ -47,5 +57,4 @@ if __name__ == '__main__':
 
     data_path = 'data/yearly_{}.h5'.format(horizon)
 
-
-
+    raise NotImplementedError('THIS SCRIPT IS IN PROGRESS. IT DOES NOT YET WORK PROPERLY.')
