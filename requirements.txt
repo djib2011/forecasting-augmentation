@@ -37,7 +37,7 @@ jupyter-core==4.11.2
 jupyterlab-pygments==0.1.2
 Keras-Preprocessing==1.1.2
 kiwisolver==1.4.5
-Markdown==3.3.3
+Markdown==3.5.2
 MarkupSafe==1.1.1
 matplotlib==3.3.2
 mistune==0.8.4
