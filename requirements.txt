@@ -21,7 +21,7 @@ google-pasta==0.2.0
 grpcio==1.62.2
 h5py==3.11.0
 idna==3.7
-importlib-metadata==2.0.0
+importlib-metadata==8.5.0
 ipykernel==6.29.4
 ipython==8.27.0
 ipython-genutils==0.2.0
